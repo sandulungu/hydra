@@ -1,0 +1,25 @@
+{
+    "name": "z7/hydra",
+    "type": "library",
+    "description": "Hydra micro-framework",
+    "homepage": "https://github.com/z7/hydra",
+    "license": "BSD-3",
+    "authors": [
+        {
+            "name": "Sandu Lungu",
+            "email": "sandu@lungu.info"
+        }
+    ],
+    "require": {
+        "php": ">=5.3",
+        "twig/twig": "1.*",
+        "symfony/http-kernel": "2.*",
+        "symfony/finder": "2.*",
+        "monolog/monolog": "1.*"
+    },
+    "autoload": {
+        "psr-0" : {
+            "Hydra" : "src/"
+        }
+    }
+}
