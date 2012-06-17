@@ -11,10 +11,4 @@
 
 namespace Hydra;
 
-$app = new App;
 $methods = $services = $hooks = array();
-
-///**
-// * @property array $test 
-// */
-//class App {}

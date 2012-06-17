@@ -13,7 +13,8 @@ namespace Hydra;
 
 // Default app setings
 $hooks['app.config'][-1000][] = function (&$config) {
-    $config['lang'] = 'en';
+    $config['i18n.default_lang'] = 'en';
+    
     $config['session.name'] = 'hydra';
     
     $config['cookies.expires_in'] = 60*60*24*365; // 1 year

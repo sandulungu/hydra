@@ -1,5 +1,11 @@
 <?php
 /**
+ * Monolog services configuration.
+ * 
+ * By default there are 2 log services configurated:
+ *  - app.monolog.debug: Used to show debugging info in browser, using FirePHP and ChromePHP extension.
+ *  - app.monolog.main:  Main application log. In production, it will only log requests generating warnings.
+ * 
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
  * @author      Sandu Lungu <sandu@lungu.info>
@@ -7,14 +13,6 @@
  * @subpackage  core
  * @filesource
  * @license     http://www.opensource.org/licenses/MIT MIT
- */
-
-/**
- * Monolog services configuration.
- * 
- * By default there are 2 log services configurated:
- *  - app.monolog.debug: Used to show debugging info in browser, using FirePHP and ChromePHP extension.
- *  - app.monolog.main:  Main application log. In production, it will only log requests generating warnings.
  */
 
 namespace Hydra;

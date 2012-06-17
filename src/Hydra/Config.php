@@ -16,11 +16,11 @@ namespace Hydra;
  * 
  * Performs transparent saving on value set/unset. 
  * 
- * @property string $lang
- * @property array $mongodb
- * @property array $pdo
- * @property array $routes
- * @property array $twig
+ * @property string $i18n__default_lang
+ * @property array  $mongodb
+ * @property array  $pdo
+ * @property array  $routes
+ * @property array  $twig
  */
 class Config implements \ArrayAccess {
     

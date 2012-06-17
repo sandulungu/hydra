@@ -46,14 +46,16 @@ class Request extends Container {
     }
 
     /**
-     * Current language code. Multiplingual support should be implemented in an external service.
+     * Current language code.
+     * 
+     * Multiplingual support should be implemented in an external service.
      */
     function service__lang() {
-        return $this->app->config->l;
+        return $this->app->config->i18n__default_lang;
     }
     
     /**
-     * A lazy-loading shortcut for action params.
+     * A shortcut for action params.
      */
     function &service__params() {
         return $this->action->params;
