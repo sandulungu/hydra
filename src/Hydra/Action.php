@@ -11,8 +11,6 @@
 
 namespace Hydra;
 
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
 /**
  * Class is used for default routing and action dispatching.
  */
@@ -27,19 +25,17 @@ class Action {
      * @return bool|Action On success return an Action instance.
      */
     static function match(Request $request, $pattern, \Closure $callback = null, $requirements = array(), $defaults = array()) {
-        $requirements += array('format' => 'html', 'method' => 'GET|HEAD');
-        if (!empty($requirements['method'])) {
-            if (!preg_match("/^{$requirements['method']}$/", $request->method)) {
-                return false;
-            }
+        $requirements += array('format' => 'html', 'method' => 'GET');
+        if (($request->method == 'HEAD' ? 'GET' : $request->method) != $requirements['method']) {
+            return false;
         }
                 
         $types = array('format' => 'string');
-        $preg = preg_replace_callback('/%([a-z0-9_]+)(?::([a-z0-9_]+))?/', function($matches) use ($requirements, &$types) {
+        $preg = preg_replace_callback('/[%$]([a-z0-9_]+)(?::([a-z0-9_]+))?/', function($matches) use ($requirements, &$types) {
             $name = $matches[1];
             $types[$name] = empty($matches[2]) ? 'string' : $matches[2];
             return empty($requirements[$name]) ? "(?P<$name>[^./]+?)" : "(?P<$name>{$requirements[$name]})";
-        }, strtr($pattern, array('.', '\.')));
+        }, strtr(ltrim($pattern, '/'), array('.', '\.')));
         if (!preg_match("`^$preg(?:\.(?P<format>{$requirements['format']}))?$`", $request->path, $matches)) {
             return false;
         }
@@ -51,13 +47,10 @@ class Action {
             }
             $params[$name] = $types[$name] ? $request->app["method:normalize.{$types[$name]}"]($match) : $match;
             if ($params[$name] === null) {
-                throw new \RuntimeException("Route matched, but invalid value for $name param detected: $match");
+                throw new Exception\InvalidActionParamException("Route matched, but invalid value for $name param detected: $match");
             }
         }
         $params += $defaults + array('format' => 'html');
-        if (!$callback) {
-            $params += $defaults + array('class_prefix' => 'App\Controller\\', 'controller' => 'Default', 'action' => 'execute');
-        }
         
         $name = (empty($requirements['method']) ? 'all' : $requirements['method']) . "_$pattern";
         $name = preg_replace('/[^a-z0-9]+/', '_', strtolower($name));
@@ -77,15 +70,20 @@ class Action {
         
         // Use controller and action
         if (!$this->_callback) {
-            $controller_class = $this->params['class_prefix'] . preg_replace('/[^a-z0-9]+/i', '', $this->params['controller']) . 'Controller';
+            $this->params += array(
+                '%controller'  => 'App\Controller\%sController', 
+                'controller'    => 'Default', 
+                'action'        => 'execute'
+            );
+            $controller_class = sprintf($this->params['%controller'], ucfirst(preg_replace('/[^a-z0-9]+/i', '', $this->params['controller'])));
             if (!class_exists($controller_class)) {
-                throw new NotFoundHttpException("Controller not found: $controller_class.");
+                throw new Exception\InvalidControllerException("Controller not found: $controller_class.");
             }
             $controller = new $controller_class($request);
             
             $action = preg_replace('/[^a-z0-9]+/i', '', $this->params['action']) . 'Action';
             if (!method_exists($controller, $action)) {
-                throw new NotFoundHttpException("Action '$action' not not defined in controller: $controller_class.");
+                throw new Exception\InvalidControllerActionException("Action '$action' not not defined in controller: $controller_class.");
             }
             return call_user_func_array(
                 array($controller, $action), 

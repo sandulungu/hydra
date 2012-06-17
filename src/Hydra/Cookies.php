@@ -36,11 +36,11 @@ class Cookies implements \ArrayAccess {
         $this->_data =& $_COOKIE;
     }
 
-    function set($name, $value, $expires_in = null, $path = null, $domain = null, $secure = null, $httponly = null) {
+    function set($name, $value, $expiresIn = null, $path = null, $domain = null, $secure = null, $httponly = null) {
         $this->_data[$name] = $value;
         setcookie(
             $name, $value, 
-            time() + isset($expires_in) ? $expires_in : $this->_app->config['cookies.expires_in'], 
+            time() + isset($expiresIn) ? $expiresIn : $this->_app->config['cookies.expiresIn'], 
                      isset($path)       ? $path       : $this->_app->config['cookies.path'], 
                      isset($domain)     ? $domain     : $this->_app->config['cookies.domain'], 
                      isset($secure)     ? $secure     : $this->_app->config['cookies.secure'], 

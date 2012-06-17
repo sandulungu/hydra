@@ -11,11 +11,23 @@
 
 namespace Hydra;
 
-$hooks['app.config'][-1000][] = function(&$config) {
-    $config['routes'] = array();
+// Load annotated routes
+$hooks['app.config'][-1000][] = function(&$config, $dummy, App $app) {
+    $config['routes'] = $app->cache('request.route.annotated', function() use ($app) {
+        $routes = array();
+        foreach (Utils::listFilesRecursive($app->core->app_src_dir) as $file) {
+            if (!preg_match('/Controller\.php$/', $file)) {
+                continue;
+            }
+            
+            $classname = str_replace('/', '\\', substr($file, strlen($app->core->app_src_dir), -4));
+            $routes = array_merge($routes, $app->annotationsReader->forClass($classname));
+        }
+        return $routes;
+    });
 };
 
-$hooks['request.route_action'][1000][] = function (Request $request, &$route) {
+$hooks['request.route'][1000][] = function (Request $request, &$route) {
     if (empty($request->app->routes) && empty($request->app->config->routes)) {
         return new Action(function() {
             return 'Welcome! Please define your routes in <strong>web/index.php, app/config.php</strong> or <strong>app/hooks/route.hooks.php</strong>.';
@@ -27,6 +39,27 @@ $hooks['request.route_action'][1000][] = function (Request $request, &$route) {
             return $route;
         }
     }
+};
+
+$methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotation) {
+    $requirements = $defaults = array();
+    @list($http_method, $pattern, $json) = preg_split('/\s+/', $annotation['value'], 3);
+    if ($json) {
+        extract(json_decode($json, true));
+    }
+    
+    $name = $defaults['%controller'] = $annotation['class'];
+    if ($annotation['type'] == 'method') {
+        $defaults['action'] = substr($annotation['method'], 0 , -6);
+        $name .= "::{$defaults['action']}()";
+    }
+    
+    if (!in_array($http_method, array('GET', 'POST', 'PUT', 'DELETE'))) {
+        throw new \DomainException("Http method should be one of: 'GET', 'POST', 'PUT', 'DELETE', but '$http_method' given in $name annotation.");
+    }
+    $requirements['method'] = $http_method;
+    
+    return array($pattern, null, $requirements, $defaults);
 };
 
 $methods['app.route.get'][0] = function(App $app, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {

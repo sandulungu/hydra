@@ -11,8 +11,6 @@
 
 namespace Hydra;
 
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
 /**
  * HTTP Request holder.
  * 
@@ -65,9 +63,9 @@ class Request extends Container {
      *  Match current path and get action.
      */
     function service__action() {
-        $action = $this->app->hook('request.route_action', $this);
+        $action = $this->app->hook('request.route', $this);
         if (!$action) {
-            throw new NotFoundHttpException("No route matched path: {$this->path}.");
+            throw new Exception\NotFoundHttpException("No route matched path: {$this->path}.");
         }
         return $action;
     }

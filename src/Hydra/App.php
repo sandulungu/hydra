@@ -21,6 +21,7 @@ use Composer\Autoload\ClassLoader;
  * @property \Twig_Environment  $twig
  * @property \PDO               $pdo
  * @property \MongoDB           $mongodb
+ * @property AnnotationsReader  $annotationsReader
  * @property string             $security__salt
  * 
  * @property \Monolog\Logger    $monolog__main
@@ -50,7 +51,7 @@ class App extends Container {
     var $requests = array(), $routes = array();
     
     /**
-     * @var Core
+     * @var \Hydra\Core
      */
     var $core;
 
@@ -99,17 +100,10 @@ class App extends Container {
     protected function _init() {
         $this->autoloader->add('App\\', $this->core->app_src_dir);
         
-        $app_dir = $this->core->app_hooks_dir;
-        $this->_hookFiles = $this->fallback__cache('core.hook_files', function() use ($app_dir) {
+        $core = $this->core;
+        $this->_hookFiles = $this->fallback__cache('core.hook_files', function() use ($core) {
             $files = array();
-            $iterator = new \AppendIterator();
-            $iterator->append(new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator(__DIR__ . '/..'),
-                    \RecursiveIteratorIterator::CHILD_FIRST));
-            $iterator->append(new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($app_dir),
-                    \RecursiveIteratorIterator::CHILD_FIRST));
-            foreach ($iterator as $file) {
+            foreach (Utils::listFilesRecursive(array(__DIR__ . '/..', $core->app_plugins_dir, $core->app_hooks_dir)) as $file) {
                 if ($file->isFile()) {
                     $filename = (string)$file;
                     if (preg_match('/\.hooks.php$/', $filename)) {
@@ -137,31 +131,6 @@ class App extends Container {
     }
     
     /**
-     * Serves main request.
-     */
-    public function fallback__run() {
-        if (!$_POST) {
-            $data = file_get_contents('php://input');
-            if ($data) {
-                $data = json_decode($data);
-            } else {
-                $data = null;
-            }
-        } else {
-            $data = $_POST;
-        }
-
-        $path = ltrim(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : @$_GET['path'], '/');
-        
-        $response = $this->dispatch($path, $_SERVER['REQUEST_METHOD'], $_GET, $data);
-        if ($response) {
-            $response->output();
-            return true;
-        }
-        return false;
-    }
-    
-    /**
      * Renders a sub-request.
      */
     public function render($path, $method = 'GET', $query = array(), $data = null) {
@@ -178,80 +147,6 @@ class App extends Container {
         $this->requests[] = $request;
         $response = $request->dispatch();
         return $response;
-    }
-    
-    /**
-     * Custom runtime configuration support. Equivalent to Drupal's variables.
-     */
-    public function service__config() {
-        $app = $this;
-        return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
-            return $app->hook('app.config');
-        }));
-    }
-    
-    /**
-     * Cookies provider.
-     */
-    public function &service__cookies() {
-        return new Cookies();
-    }
-
-    /**
-     * Session provider.
-     */
-    public function &service__session() {
-        session_name($this->config['session.name']);
-        session_start();
-        return $_SESSION;
-    }
-
-    /**
-     * Generates security salt, then reuses it.
-     */
-    public function service__security__salt() {
-        $filename = "{$this->core->data_dir}/security.salt";
-        if (!file_exists($filename)) {
-            $characterList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            for ($i = 0, $salt = ''; $i < 128; $i++) {
-                $salt .= $characterList{mt_rand(0, (strlen($characterList) - 1))};
-            }
-            file_put_contents($filename, $salt);
-            return $salt;
-        } else {
-            return file_get_contents($filename);
-        }
-    }
-    
-    /**
-     * Pluggable caching engine.
-     */
-    protected function fallback__cache($name, $value = null, $reset = false) {
-        return $this->persist("{$this->core->cache_dir}/$name", $value, $this->core->debug || $reset);
-    }
-
-    /**
-     * Default configuration persister.
-     * 
-     * @see \Hydra\Config
-     */
-    protected function fallback__config__persist($name = null, $value = null, $reset = false) {
-        static $values;
-        $filename = "{$this->core->data_dir}/config";
-        
-        if (!isset($values)) {
-            $values = (array)$this->persist($filename);
-        }
-        
-        if ($name) {
-            if ($reset) {
-                unset($values[$name]);
-            } else {
-                $values[$name] = $value;
-            }
-            $this->persist($filename, $values, true);
-        }
-        return $values;
     }
     
     /**
@@ -274,6 +169,34 @@ class App extends Container {
         }
     }
     
+    /**
+     * PBKDF2 key derivation function as defined by RSA's PKCS #5: 
+     *   https://www.ietf.org/rfc/rfc2898.txt
+     *   http://en.wikipedia.org/wiki/PBKDF2
+     * 
+     * One hash call should take ~20..100ms CPU time on a modern computer.
+     * This should be enough to make good (6 characters or more, upper and 
+     * lower case letters and numbers) password almost impossible to guess.
+     */
+    function hash($in, $raw_output = false, $cycles = 4096, $length = 128, $algo = 'sha1') {
+        if (!$raw_output) {
+            $length /= 2;
+        }
+        
+        $hash = '';
+        for ($i = 0; strlen($hash) < $length; $i++) {
+            $F = $U = hash_hmac($algo, $in, $this->security__salt . $i, true);
+            for ($j = 1; $j < $cycles; $j++) {
+                $U = hash_hmac($algo, $in, $U, true);
+                $F = $F ^ $U;
+            }
+            $hash .= $F;
+        }
+        
+        $hash = substr($hash, 0, $length);
+        return $raw_output ? $hash : bin2hex($hash);
+    }
+        
     /**
      * Calls registered hooks passing the 2 parameters.
      * 
@@ -313,6 +236,117 @@ class App extends Container {
             }
         }
         return $out;
+    }
+    
+    
+    //==========================================================================
+    
+    
+    /**
+     * Custom runtime configuration support. Equivalent to Drupal's variables.
+     */
+    public function service__config() {
+        $app = $this;
+        return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
+            return $app->hook('app.config');
+        }));
+    }
+    
+    /**
+     * Cookies provider.
+     */
+    public function &service__cookies() {
+        return new Cookies();
+    }
+
+    /**
+     * Session provider.
+     */
+    public function &service__session() {
+        session_name($this->config['session.name']);
+        session_start();
+        return $_SESSION;
+    }
+
+    public function service__annotationsReader() {
+        return new AnnotationsReader();
+    }
+
+    /**
+     * Generates security salt, then reuses it.
+     */
+    public function service__security__salt() {
+        $filename = "{$this->core->data_dir}/security.salt";
+        if (!file_exists($filename)) {
+            $characterList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            for ($i = 0, $salt = ''; $i < 128; $i++) {
+                $salt .= $characterList{mt_rand(0, (strlen($characterList) - 1))};
+            }
+            file_put_contents($filename, $salt);
+            return $salt;
+        } else {
+            return file_get_contents($filename);
+        }
+    }
+    
+    
+    //==========================================================================
+    
+    
+    /**
+     * Serves main request.
+     */
+    protected function fallback__run() {
+        if (!$_POST) {
+            $data = file_get_contents('php://input');
+            if ($data) {
+                $data = json_decode($data);
+            } else {
+                $data = null;
+            }
+        } else {
+            $data = $_POST;
+        }
+
+        $path = ltrim(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : @$_GET['path'], '/');
+        
+        $response = $this->dispatch($path, $_SERVER['REQUEST_METHOD'], $_GET, $data);
+        if ($response) {
+            $response->output();
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Pluggable caching engine.
+     */
+    protected function fallback__cache($name, $value = null, $reset = false) {
+        return $this->persist("{$this->core->cache_dir}/$name", $value, $this->core->debug || $reset);
+    }
+
+    /**
+     * Default configuration persister.
+     * 
+     * @see \Hydra\Config
+     */
+    protected function fallback__config__persist($name = null, $value = null, $reset = false) {
+        static $values;
+        $filename = "{$this->core->data_dir}/config";
+        
+        if (!isset($values)) {
+            $values = (array)$this->persist($filename);
+        }
+        
+        if ($name) {
+            if ($reset) {
+                unset($values[$name]);
+            } else {
+                $values[$name] = $value;
+            }
+            $this->persist($filename, $values, true);
+        }
+        return $values;
     }
     
 }

@@ -17,7 +17,7 @@ $hooks['app.config'][-1000][] = function (&$config) {
     
     $config['session.name'] = 'hydra';
     
-    $config['cookies.expires_in'] = 60*60*24*365; // 1 year
+    $config['cookies.expiresIn'] = 60*60*24*365; // 1 year
     $config['cookies.path'] = null;
     $config['cookies.domain'] = null;
     $config['cookies.secure'] = null;

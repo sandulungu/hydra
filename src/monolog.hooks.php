@@ -19,7 +19,7 @@ namespace Hydra;
 
 // Set default configuration options.
 $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
-    $config['monolog.main_log'] = $app->core->logs_dir . 'main.log';
+    $config['monolog.mainLogFile'] = $app->core->logs_dir . 'main.log';
     
     $config['monolog.loggers'] = array(
         'debug' => array(
@@ -35,19 +35,19 @@ $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
     $config['monolog.handlers'] = array(
         'firephp' => array('FirePHP'),
         'chromephp' => array('ChromePHP'),
-        'main_stream' => array(
+        'main.stream' => array(
             'stream', 
-            &$config['monolog.main_log'], 
+            &$config['monolog.mainLogFile'], 
         ),
     );
     
     if ($app->core->debug) {
-        $config['monolog.handlers']['main'] =& $config['monolog.handlers']['main_stream'];
+        $config['monolog.handlers']['main'] =& $config['monolog.handlers']['main.stream'];
     } else {
         $config['monolog.handlers']['main'] = array(
             'fingerscrossed', 
             function() use ($app) {
-                return $app['monolog.handlers.main_stream'];
+                return $app['monolog.handlers.main.stream'];
             },
         );
     }

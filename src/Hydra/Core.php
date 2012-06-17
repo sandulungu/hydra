@@ -19,6 +19,7 @@ namespace Hydra;
  * @property string $register_error_handler
  * @property string $app_config_file
  * @property string $app_hooks_dir
+ * @property string $app_plugins_dir
  * @property string $app_src_dir
  * @property string $app_views_dir
  * @property string $core_config_file
@@ -50,7 +51,8 @@ class Core {
         $config += array(
             'debug' => false,
             'app_config_file' => '../app/config.php',
-            'app_hooks_dir' => '../app',
+            'app_hooks_dir' => '../app/hooks',
+            'app_plugins_dir' => '../app/plugins',
             'app_src_dir' => '../app/src',
             'app_views_dir' => '../app/views',
             'core_dir' => __DIR__ . '/../..',

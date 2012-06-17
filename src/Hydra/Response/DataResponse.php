@@ -26,9 +26,6 @@ class DataResponse extends Response {
     function __construct(Request $request, $data = array()) {
         parent::__construct($request);
         $this->data = $data;
-        if ($this->format != 'html') {
-            $this->view = false;
-        }
     }
     
     function render() {

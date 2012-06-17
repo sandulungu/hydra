@@ -53,7 +53,7 @@ class Container implements \ArrayAccess {
             ksort($callbacks);
             $callback = end($callbacks);
             if (!is_callable($callback)) {
-                throw new \LogicException("Remote method '$method' is not a valid callback.");
+                throw new Exception\ContainerException("Remote method '$method' is not a valid callback.");
             }
             $is_remote = true;
             return $callback;
@@ -66,7 +66,7 @@ class Container implements \ArrayAccess {
         }
         
         $remotes = implode(', ', array_keys(self::$_containerCallbacks['methods']));
-        throw new \BadMethodCallException("Undefined method or factory: $offset.\nKnown remotes: $remotes.");
+        throw new Exception\ContainerException("Undefined method or factory: $offset.\nKnown remotes: $remotes.");
     }
     
     /**
@@ -92,7 +92,7 @@ class Container implements \ArrayAccess {
             ksort($factories);
             $factory = end($factories);
             if (!is_callable($factory)) {
-                throw new \LogicException("Service factory '$name' is not a valid callback.");
+                throw new Exception\ContainerException("Service factory '$name' is not a valid callback.");
             }
             $this->$name =& $factory($this);
             return $this->$name;
@@ -106,7 +106,7 @@ class Container implements \ArrayAccess {
         
         if (!$this->__allowInvalidProperties) {
             $services = implode(', ', array_keys(self::$_containerCallbacks['services']));
-            throw new \OutOfBoundsException("Undefined property or factory: $offset.\nKnown services: $services.");
+            throw new Exception\ContainerException("Undefined property or factory: $offset.\nKnown services: $services.");
         }
         $this->$name = array();
         return $this->$name;
