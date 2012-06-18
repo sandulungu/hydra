@@ -22,7 +22,7 @@ namespace Hydra;
  * @property array $routes
  * @property array $twig
  */
-class Cookies implements \ArrayAccess {
+class Cookie implements \ArrayAccess {
     
     /**
      * @var App 
@@ -40,11 +40,11 @@ class Cookies implements \ArrayAccess {
         $this->_data[$name] = $value;
         setcookie(
             $name, $value, 
-            time() + isset($expiresIn) ? $expiresIn : $this->_app->config['cookies.expiresIn'], 
-                     isset($path)       ? $path       : $this->_app->config['cookies.path'], 
-                     isset($domain)     ? $domain     : $this->_app->config['cookies.domain'], 
-                     isset($secure)     ? $secure     : $this->_app->config['cookies.secure'], 
-                     isset($httponly)   ? $httponly   : $this->_app->config['cookies.httponly']
+            time() + isset($expiresIn)  ? $expiresIn  : $this->_app->config['cookie']['expiresIn'], 
+                     isset($path)       ? $path       : $this->_app->config['cookie']['path'], 
+                     isset($domain)     ? $domain     : $this->_app->config['cookie']['domain'], 
+                     isset($secure)     ? $secure     : $this->_app->config['cookie']['secure'], 
+                     isset($httponly)   ? $httponly   : $this->_app->config['cookie']['httponly']
         );
     }
     

@@ -30,7 +30,7 @@ class DataResponse extends Response {
     
     function render() {
         if (!isset($this->content)) {
-            $this->body = $this->app["dump.$this->format"]($this->data);
+            $this->body = $this->app["method:dump.$this->format"]($this->data);
             parent::render();
         }
     }

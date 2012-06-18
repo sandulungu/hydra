@@ -45,6 +45,7 @@ class PharCompiler {
             ->in(__DIR__.'/../../vendor/twig/twig/lib')
             ->in(__DIR__.'/../../vendor/monolog/monolog/src')
             ->in(__DIR__.'/../../vendor/symfony/http-kernel/Symfony/Component/HttpKernel/Exception')
+            ->in(__DIR__.'/../../vendor/symfony/http-foundation/Symfony/Component/HttpFoundation/File/MimeType')
         ;
 
         foreach ($finder as $file) {

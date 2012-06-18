@@ -20,7 +20,7 @@ class Response {
     
     static protected $_headers = array();
     
-    var $data, $headers, $variables, $view, $content, $body, $statusCode = 200;
+    var $data, $headers, $format, $variables, $view, $content, $body, $statusCode = 200;
     
     /**
      * @var App
@@ -36,11 +36,15 @@ class Response {
         $this->app = $request->app;
         $this->request = $request;
         $request->response = $this;
-        
-        $this->body = $body;
-        $this->format = $request->params['format'];
-        $this->view = $this->request->isMain ? "default.$this->format.twig" : "partial.$this->format.twig";
         $this->headers =& self::$_headers;
+        
+        $this->format = $request->params['format'];
+        if ($request->isMain) {
+            $this->headers['Content-Type'] = $request->app->mimetype__extensionGuesser->guess($this->format);
+        }
+                
+        $this->body = $body;
+        $this->view = $this->request->isMain ? "default.$this->format.twig" : "partial.$this->format.twig";
     }
     
     function render($render_stream = true) {
@@ -81,13 +85,7 @@ class Response {
         
         // Streaming support.
         if ($this->content instanceof \Closure) {
-            
-            // Make sure we're not buffering the output.
-            while (ob_get_level()) {
-                ob_end_flush();
-            }
-            ob_implicit_flush();
-            
+            $this->app->hook('response.output', $this);
             $callback = $this->content;
             $callback($this);
         } else {

@@ -12,17 +12,22 @@
 namespace Hydra;
 
 use Composer\Autoload\ClassLoader;
+use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 
 /**
  * Application singleton and main service container.
  * 
- * @property array              $session
- * @property Config             $config
- * @property \Twig_Environment  $twig
- * @property \PDO               $pdo
- * @property \MongoDB           $mongodb
- * @property AnnotationsReader  $annotationsReader
- * @property string             $security__salt
+ * @property Config             config
+ * @property array              session
+ * @property Cookie             cookie
+ * @property \Twig_Environment  twig
+ * @property \PDO               pdo
+ * @property \MongoDB           mongodb
+ * @property AnnotationsReader  annotationsReader
+ * @property string             security__salt
+ * 
+ * @property \Hydra\MimeType\MimeTypeGuesser          $mimetype__guesser
+ * @property \Hydra\MimeType\ExtensionMimeTypeGuesser $mimetype__extensionGuesser
  * 
  * @property \Monolog\Logger    $monolog__main
  * @property \Monolog\Logger    $monolog__debug
@@ -153,6 +158,9 @@ class App extends Container {
      * Save/load data from/to file.
      */
     public function persist($filename, $value = null, $reset = false) {
+        if (strpos($filename, '%data_dir/') === 0) {
+            $filename = $this->core->data_dir . substr($filename, 9);
+        }
         if ($reset) {
             if (!isset($value)) {
                 unlink($filename);
@@ -243,57 +251,6 @@ class App extends Container {
     
     
     /**
-     * Custom runtime configuration support. Equivalent to Drupal's variables.
-     */
-    public function service__config() {
-        $app = $this;
-        return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
-            return $app->hook('app.config');
-        }));
-    }
-    
-    /**
-     * Cookies provider.
-     */
-    public function &service__cookies() {
-        return new Cookies();
-    }
-
-    /**
-     * Session provider.
-     */
-    public function &service__session() {
-        session_name($this->config['session.name']);
-        session_start();
-        return $_SESSION;
-    }
-
-    public function service__annotationsReader() {
-        return new AnnotationsReader();
-    }
-
-    /**
-     * Generates security salt, then reuses it.
-     */
-    public function service__security__salt() {
-        $filename = "{$this->core->data_dir}/security.salt";
-        if (!file_exists($filename)) {
-            $characterList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            for ($i = 0, $salt = ''; $i < 128; $i++) {
-                $salt .= $characterList{mt_rand(0, (strlen($characterList) - 1))};
-            }
-            file_put_contents($filename, $salt);
-            return $salt;
-        } else {
-            return file_get_contents($filename);
-        }
-    }
-    
-    
-    //==========================================================================
-    
-    
-    /**
      * Serves main request.
      */
     protected function fallback__run() {
@@ -347,6 +304,65 @@ class App extends Container {
             $this->persist($filename, $values, true);
         }
         return $values;
+    }
+    
+    
+    //==========================================================================
+    
+    
+    /**
+     * Custom runtime configuration support. Equivalent to Drupal's variables.
+     */
+    public function service__config() {
+        $app = $this;
+        return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
+            return $app->hook('app.config');
+        }));
+    }
+    
+    /**
+     * Cookies provider.
+     */
+    public function &service__cookie() {
+        return new Cookie();
+    }
+
+    /**
+     * Session provider.
+     */
+    public function &service__session() {
+        session_name($this->config['session']['name']);
+        session_start();
+        return $_SESSION;
+    }
+
+    public function service__annotationsReader() {
+        return new AnnotationsReader();
+    }
+
+    /**
+     * Generates security salt, then reuses it.
+     */
+    public function service__security__salt() {
+        $filename = "{$this->core->data_dir}/security.salt";
+        if (!file_exists($filename)) {
+            $characterList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            for ($i = 0, $salt = ''; $i < 128; $i++) {
+                $salt .= $characterList{mt_rand(0, (strlen($characterList) - 1))};
+            }
+            file_put_contents($filename, $salt);
+            return $salt;
+        } else {
+            return file_get_contents($filename);
+        }
+    }
+
+    protected function service__mimetype__guesser() {
+        return new MimeType\MimeTypeGuesser;
+    }
+    
+    protected function service__mimetype__extensionGuesser() {
+        return new MimeType\ExtensionMimeTypeGuesser;
     }
     
 }

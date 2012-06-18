@@ -40,7 +40,7 @@ class Html {
             if ($data) {
                 $data = "<li>$data</li>";
             }
-            $data = "\n$prefix<ul>$data</ul>\n";
+            $data = $numeric ? "\n$prefix<ol>$data</ol>\n" : "\n$prefix<ul>$data</ul>\n";
         }
         else if (is_bool($data)) {
             $data = $data ? 'TRUE' : 'FALSE';

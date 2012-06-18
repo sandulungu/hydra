@@ -11,20 +11,25 @@
 
 namespace Hydra;
 
-// Default app setings
+// Default app setings.
 $hooks['app.config'][-1000][] = function (&$config) {
     $config['i18n.default_lang'] = 'en';
+    $config['vendor.web_dirs'] = array();
+    $config['response.x_sendfile'] = false;
     
-    $config['session.name'] = 'hydra';
+    $config['session']['name'] = 'hydra';
     
-    $config['cookies.expiresIn'] = 60*60*24*365; // 1 year
-    $config['cookies.path'] = null;
-    $config['cookies.domain'] = null;
-    $config['cookies.secure'] = null;
-    $config['cookies.httponly'] = null;
+    $config['cookie']['expiresIn'] = 60*60*24*365; // 1 year
+    $config['cookie']['path'] = null;
+    $config['cookie']['domain'] = null;
+    $config['cookie']['secure'] = null;
+    $config['cookie']['httponly'] = null;
+    
+    $config['assets.js'] = array();
+    $config['assets.css'] = array();
 };
 
-// Load app configuration options.
+// Load app configuration options from config file.
 $hooks['app.config'][0][] = function (&$config, &$dummy, App $app) {
     if (file_exists($app->core->app_config_file)) {
         require $app->core->app_config_file;

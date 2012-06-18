@@ -19,17 +19,18 @@ $hooks['request.dispatch'][0][] = function (Request $request, &$response) {
         $response = $request->action->execute($request);
     }
     
-    // We have a simple text response.
+    // We have a simple, text response.
     if (is_string($response)) {
         $response = new Response($request, $response);
     }
     
-    // This should be the default case.
+    // We have a data response.
     elseif (is_array($response)) {
-        if ($request->params['format'] != 'html') {
-            $response = new Response\DataResponse($request, $response);
-        } else {
-            $response = new Response\FancyResponse($request, $response);
-        }
+        $response = new Response\DataResponse($request, $response);
     }
+};
+
+// If no view was rendered so far, then there's something wrong.
+$hooks['response.render'][1000][] = function (Response $response) {
+    throw new \LogicException("View not rendered: {$response->view}");
 };

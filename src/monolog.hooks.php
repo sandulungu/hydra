@@ -53,7 +53,7 @@ $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
     }
 };
 
-// Register handlers
+// Register logger services.
 $hooks['app.config'][2000][] = function (&$config, $dummy, App $app) use (&$services) {
     
     foreach ($config['monolog.handlers'] as $name => $params) {

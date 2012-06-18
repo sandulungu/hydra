@@ -11,6 +11,7 @@
 
 namespace Hydra;
 
+// Default database config.
 $hooks['app.config'][-1000][] = function(&$config) {
     $config['mongodb'] = array(
         'uri' => null,
@@ -24,11 +25,13 @@ $hooks['app.config'][-1000][] = function(&$config) {
     );
 };
 
+// Default MongoDB service.
 $services['app.mongodb'][0] = function(App $app) {
     $mongo = new \Mongo($app->config['mongodb']['uri']);
     return $mongodb = $mongo->selectDB($app->config['mongodb']['dbname']);
 };
 
+// Default PDO service.
 $services['app.pdo'][0] = function() {
     $pdo = new \PDO($app->config['pdo']['uri'], $app->config['pdo']['username'], $app->config['pdo']['passwd']);
     if ($app->config['pdo']['utf8']) {

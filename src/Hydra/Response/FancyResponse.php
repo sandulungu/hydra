@@ -22,7 +22,7 @@ class FancyResponse extends Response {
     function __construct(Request $request, $variables = array(), $view = null) {
         parent::__construct($request);
         $this->variables = $variables;
-        $this->view = $view ? $view : "$request->route.$this->format.twig";
+        $this->view = $view ? $view : "$request->action.$this->format.twig";
     }
     
 }

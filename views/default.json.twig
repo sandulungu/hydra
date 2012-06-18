@@ -1,5 +1,5 @@
 {% if callback is defined -%}
-    {{ callback }}({{ body }})
+    {{ callback|raw }}({{ body|raw }})
 {%- else -%}
-    {{ body }}
+    {{ body|raw }}
 {%- endif %}

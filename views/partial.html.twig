@@ -1,7 +1,7 @@
 {% block html %}
     {% block response_title %}
         {% if title is defined %}
-            <h1>{{ title }}</h1>
+            <h2>{{ title }}</h2>
         {% endif %}
     {% endblock %}
     {% block response_body response.body|default('No content defined')|raw %}

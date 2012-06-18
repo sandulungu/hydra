@@ -1,44 +1,48 @@
 {% extends 'partial.html.twig' %}
-{% block html %}
+{% block html %}{#% spaceless %#}
 <!DOCTYPE html>
 <html lang="{{ request.lang|default('en') }}">
     <head>
         <title>{% block head_title title|default('Hydra') %}</title>
-        
-        {% block head_meta -%}
+
+        {% block head_meta %}
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
         <meta name="generator" content="https://github.com/z7/hydra">
-        {%- endblock %}
+        {% endblock %}
 
         <!-- Le styles -->
-        {% block head_css -%}
+        {% block head_css %}
         <link href="//current.bootstrapcdn.com/bootstrap-v204/css/bootstrap-combined.min.css" rel="stylesheet">
-        {%- endblock %}
+        {% for css in response.app.config['assets.css'] %}
+        <link href="{{ css }}" rel="stylesheet">
+        {% endfor %}
+        {% endblock %}
         <style>
-            {% block head_style -%}
+            {%- block head_style -%}
             body {
                 padding-top: 55px;
             }
-            {%- endblock %}
+            {%- endblock -%}
         </style>
 
-        {% block head_scripts -%}
+        {% block head_scripts %}
         <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
         <!--[if lt IE 9]>
         <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
-        {%- endblock %}
+        {% endblock %}
+
     </head>
 
     <body>
-        {% block body -%}
+        {% block body %}
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="{{ baseurl }}">{% block navbar_title 'Hydra' %}</a>
-                    {% block nav -%}
+                    {% block nav %}
                     <ul class="nav">
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">First menu <b class="caret"></b></a>
@@ -69,23 +73,31 @@
                             </ul>
                         </li>
                     </ul>
-                    {%- endblock nav %}
+                    {% endblock nav %}
                 </div>
             </div>
         </div>
         <div class="container">
+            {% block response_title %}
+                {% if title is defined %}
+                    <h1>{{ title }}</h1>
+                {% endif %}
+            {% endblock %}
             {{ block('response_body') }}
             <hr>
             <footer>
                 <p>Powered by <a href="https://github.com/z7/hydra">Hydra micro-framework</a>.</p>
             </footer>
         </div> <!-- /container -->
-        {%- endblock body %}
+        {% endblock body %}
         
-        {% block scripts -%}
+        {% block scripts %}
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <script src="//current.bootstrapcdn.com/bootstrap-v204/js/bootstrap.min.js"></script>
-        {%- endblock %}
+        {% for script in response.app.config['assets.js'] %}
+        <script src="{{ script }}"></script>
+        {% endfor %}
+        {% endblock %}
     </body>
 </html>
-{% endblock html %}
+{#% endspaceless %#}{% endblock html %}
