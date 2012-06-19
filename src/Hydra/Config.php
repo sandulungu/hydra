@@ -42,6 +42,10 @@ class Config implements \ArrayAccess {
         );
     }
     
+    function all() {
+        return $this->_data;
+    }
+    
     function __isset($name) {
         return isset($this->_data[str_replace('__', '.', $name)]);
     }

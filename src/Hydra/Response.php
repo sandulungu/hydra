@@ -20,7 +20,7 @@ class Response {
     
     static protected $_headers = array();
     
-    var $data, $headers, $format, $variables, $view, $content, $body, $statusCode = 200;
+    var $headers, $format, $content, $statusCode = 200;
     
     /**
      * @var App
@@ -32,32 +32,23 @@ class Response {
      */
     var $request;
 
-    function __construct(Request $request, $body = '') {
+    function __construct(Request $request, $content = null) {
         $this->app = $request->app;
         $this->request = $request;
         $request->response = $this;
         $this->headers =& self::$_headers;
         
+        // Set Content-Type header
+        // Note: MimeTypeGuesser is a heavy class, so don't load it unnecessary
         $this->format = $request->params['format'];
-        if ($request->isMain) {
+        if ($request->isMain && $this->format != 'html') {
             $this->headers['Content-Type'] = $request->app->mimetype__extensionGuesser->guess($this->format);
         }
                 
-        $this->body = $body;
-        $this->view = $this->request->isMain ? "default.$this->format.twig" : "partial.$this->format.twig";
+        $this->content = $content;
     }
     
     function render($render_stream = true) {
-        if (!isset($this->content)) {
-            if ($this->view) {
-                $this->variables['response'] = $this;
-                $this->variables['baseurl'] = $this->app->core->baseurl;
-                $this->variables['webroot'] = $this->app->core->webroot;
-                $this->content = $this->app->hook('response.render', $this);
-            } else {
-                $this->content = $this->body;
-            }
-        }
         if ($render_stream && $this->content instanceof \Closure) {
             ob_start();
             $this->content($this);
@@ -75,7 +66,7 @@ class Response {
         
         // Send headers.
         if ($this->statusCode != 200 && isset(SymfonyResponse::$statusTexts[$this->statusCode])) {
-            header(sprintf('HTTP/1.0 %s %s', $this->statusCode, SymfonyResponse::$statusTexts[$this->statusCode]));
+            header(sprintf('HTTP/1.1 %s %s', $this->statusCode, SymfonyResponse::$statusTexts[$this->statusCode]));
         }
         if ($this->headers) {
             foreach($this->headers as $header => $value) {

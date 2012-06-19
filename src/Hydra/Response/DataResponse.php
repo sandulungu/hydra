@@ -19,18 +19,18 @@ use Hydra\Response;
  * 
  * @property string $body
  */
-class DataResponse extends Response {
+class DataResponse extends RenderedResponse {
     
     var $data;
 
-    function __construct(Request $request, $data = array()) {
-        parent::__construct($request);
+    function __construct(Request $request, $data = array(), $title = 'Data dump') {
+        parent::__construct($request, $title);
         $this->data = $data;
     }
     
     function render() {
         if (!isset($this->content)) {
-            $this->body = $this->app["method:dump.$this->format"]($this->data);
+            $this->variables['body'] = $this->app["method:dump.$this->format"]($this->data);
             parent::render();
         }
     }

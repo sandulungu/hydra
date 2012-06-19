@@ -23,8 +23,8 @@ class FileResponse extends Response {
     
     var $filename;
 
-    function __construct(Request $request, $filename = array(), $force_download = false) {
-        if (!is_file($filename)) {
+    function __construct(Request $request, $filename, $force_download = false) {
+        if (!is_file($filename) || !is_readable($filename)) {
             throw new \Hydra\Exception\NotFoundHttpException("File not found: $filename");
         }
         
@@ -59,16 +59,11 @@ class FileResponse extends Response {
                     $filename = realpath($filename);
                     header("X-Sendfile: $filename");
                 } else {
+                    set_time_limit(0); //Set the execution time to infinite.
                     readfile($filename);
                 }
             }
         };
-    }
-    
-    function render() {
-        if (!isset($this->content)) {
-            $this->content = '';
-        }
     }
     
 }

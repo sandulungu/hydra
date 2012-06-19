@@ -12,14 +12,13 @@
 namespace Hydra\Response;
 
 use Hydra\Request;
-use Hydra\Response;
 
 /**
  * Response for action-specific views. 
  */
-class FancyResponse extends Response {
+class FancyResponse extends RenderedResponse {
     
-    function __construct(Request $request, $variables = array(), $view = null) {
+    function __construct(Request $request, array $variables = array(), $view = null) {
         parent::__construct($request);
         $this->variables = $variables;
         $this->view = $view ? $view : "$request->action.$this->format.twig";

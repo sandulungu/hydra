@@ -34,7 +34,7 @@ class Core {
     
     protected $_config;
 
-    function __construct($config = array()) {
+    function __construct(array $config = array()) {
         
         // Get base-url and web-root
         $url_rewritten = isset($_SERVER['REDIRECT_URL']);
@@ -42,7 +42,7 @@ class Core {
         if ($url_rewritten) {
             $uri = $_SERVER['REQUEST_URI'];
             for($i = 0; $i < strlen($uri) && $i < strlen($baseurl) && $uri[$i] == $baseurl[$i]; $i++) {}
-            $baseurl = $webroot = substr($baseurl, 0, $i);
+            $baseurl = $webroot = rtrim(substr($baseurl, 0, $i), '/');
         } else {
             $webroot = dirname($baseurl);
         }
@@ -79,8 +79,12 @@ class Core {
         }
     }
     
+    function __isset($name) {
+        return isset($this->_config[$name]);
+    }
+ 
     function __get($name) {
         return $this->_config[$name];
     }
- 
+    
 }

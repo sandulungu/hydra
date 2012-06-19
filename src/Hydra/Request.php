@@ -29,7 +29,7 @@ class Request extends Container {
     
     var $query, $data, $method, $path, $response, $isMain = false;
 
-    function __construct(App $app, $path, $method = 'GET', $query = array(), $data = null) {
+    function __construct(App $app, $path, $method = 'GET', array $query = array(), $data = null) {
         $this->app = $app;
         $this->query = $query;
         $this->data = $data;

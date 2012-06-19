@@ -24,6 +24,17 @@
             body {
                 padding-top: 55px;
             }
+            .dump em {
+                color: #00c;
+                font-style: normal;
+            }
+            .dump strong {
+                color: #257;
+            }
+            .dump strong em {
+                color: #a20;
+                font-weight: normal;
+            }
             {%- endblock -%}
         </style>
 
@@ -43,7 +54,7 @@
                 <div class="container">
                     <a class="brand" href="{{ baseurl }}">{% block navbar_title 'Hydra' %}</a>
                     {% block nav %}
-                    <ul class="nav">
+                    <!--<ul class="nav">
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">First menu <b class="caret"></b></a>
                             <ul class="dropdown-menu">
@@ -62,18 +73,38 @@
                                 <li><a href="#">Third link</a></li>
                             </ul>
                         </li>
-                    </ul>
+                    </ul>-->
+                    {% endblock nav %}
+                    {% if response.app.core.debug %}
                     <ul class="nav pull-right">
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Information <b class="caret"></b></a>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Debug <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href="https://github.com/z7/hydra">Hydra homepage</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/config">Configuration</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/routes">Routes</a></li>
                                 <li class="divider"></li>
-                                <li><a href="https://github.com/z7/hydra#readme">About Hydra</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/session">Session</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/cookie">Cookies</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/server">Server</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/env">Environment</a></li>
+                                <li class="divider"></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/phpinfo">phpinfo()</a></li>
                             </ul>
                         </li>
                     </ul>
-                    {% endblock nav %}
+                    {% endif %}
+                    <ul class="nav pull-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="https://github.com/z7/hydra">Hydra homepage</a></li>
+                                <li><a href="http://twig.sensiolabs.org">Twig homepage</a></li>
+                                <li><a href="http://twitter.github.com/bootstrap">Twitter Bootstrap homepage</a></li>
+                                <li class="divider"></li>
+                                <li><a href="{{ baseurl }}/hydra/about">About Hydra</a></li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>

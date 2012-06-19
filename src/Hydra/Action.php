@@ -24,7 +24,7 @@ class Action {
      * 
      * @return bool|Action On success return an Action instance.
      */
-    static function match(Request $request, $pattern, \Closure $callback = null, $requirements = array(), $defaults = array()) {
+    static function match(Request $request, $pattern, \Closure $callback = null, array $requirements = array(), array $defaults = array()) {
         $requirements += array('format' => 'html', 'method' => 'GET');
         if (($request->method == 'HEAD' ? 'GET' : $request->method) != $requirements['method']) {
             return false;
@@ -54,7 +54,6 @@ class Action {
                 throw new Exception\InvalidActionParamException("Route matched, but invalid value for '$name' param detected: $match.");
             }
         }
-        
         list($default_format) = explode('|', $requirements['format']);
         $params += $defaults + array('format' => $default_format);
         
@@ -63,7 +62,7 @@ class Action {
         return new static($callback, $params, $name, $pattern);
     }
     
-    function __construct(\Closure $callback = null, $params = array('format' => 'html'), $name = 'default', $pattern = null) {
+    function __construct(\Closure $callback = null, array $params = array('format' => 'html'), $name = 'default', $pattern = null) {
         $this->_callback = $callback;
         $this->params = $params;
         $this->name = $name;
@@ -92,7 +91,7 @@ class Action {
             if (!method_exists($controller, $action_method)) {
                 throw new Exception\InvalidControllerActionException("Action '$action_method' not not defined in controller: $controller_class.");
             }
-            return $this->_invokeAction($request, $this->_callback, $action_method);
+            return $this->_invokeAction($request, $controller, $action_method);
         }
         
         return $this->_invokeAction($request, $this->_callback);
@@ -110,13 +109,17 @@ class Action {
                 $args[] = $request;
             } else {
                 if (!isset($this->params[$name])) {
-                    $call = $class instanceof \Closure ? 'closure' : "$class::$method()";
+                    if ($parameter->isOptional()) {
+                        continue;
+                    }
+                    $classname = get_class($class);
+                    $call = $class instanceof \Closure ? 'closure' : "$classname::$method()";
                     throw new \LogicException("Parameter '$name' in $call call has no corresponding param in route pattern '$this->pattern'.");
                 }
                 $args[] = $this->params[$name];
             }
         }
-        return call_user_func_array(array($this->_callback, $method), $args);
+        return call_user_func_array(array($class, $method), $args);
     }
     
     function __toString() {

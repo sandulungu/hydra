@@ -16,6 +16,7 @@ $hooks['app.config'][-1000][] = function (&$config) {
     $config['i18n.default_lang'] = 'en';
     $config['vendor.web_dirs'] = array();
     $config['response.x_sendfile'] = false;
+    $config['response.render_string'] = true;
     
     $config['session']['name'] = 'hydra';
     

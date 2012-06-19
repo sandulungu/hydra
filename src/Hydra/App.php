@@ -17,14 +17,14 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 /**
  * Application singleton and main service container.
  * 
- * @property Config             config
- * @property array              session
- * @property Cookie             cookie
- * @property \Twig_Environment  twig
- * @property \PDO               pdo
- * @property \MongoDB           mongodb
- * @property AnnotationsReader  annotationsReader
- * @property string             security__salt
+ * @property Config             $config
+ * @property array              $session
+ * @property Cookie             $cookie
+ * @property \Twig_Environment  $twig
+ * @property \PDO               $pdo
+ * @property \MongoDB           $mongodb
+ * @property AnnotationsReader  $annotationsReader
+ * @property string             $security__salt
  * 
  * @property \Hydra\MimeType\MimeTypeGuesser          $mimetype__guesser
  * @property \Hydra\MimeType\ExtensionMimeTypeGuesser $mimetype__extensionGuesser
@@ -53,7 +53,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 class App extends Container {
     
     protected $_hooks = array(), $_hookFiles = array();
-    var $requests = array(), $routes = array();
+    var $requests = array(), $routes__defined = false;
     
     /**
      * @var \Hydra\Core
@@ -73,7 +73,7 @@ class App extends Container {
     /**
      * @return App
      */
-    static function getInstance(ClassLoader $autoloader = NULL, $core_config = array()) {
+    static function getInstance(ClassLoader $autoloader = NULL, array $core_config = array()) {
         if (!self::$_instance) {
             if (!$autoloader) {
                 throw new \LogicException('The application requires an instance of Composer\Autoload\ClassLoader.');
@@ -138,7 +138,7 @@ class App extends Container {
     /**
      * Renders a sub-request.
      */
-    public function render($path, $method = 'GET', $query = array(), $data = null) {
+    public function render($path, $method = 'GET', array $query = array(), $data = null) {
         return $this->dispatch($path, $method, $query, $data)->render();
     }
     
@@ -215,7 +215,7 @@ class App extends Container {
      * @param mixed $out
      * @return mixed $out 
      */
-    function &hook($name, $in = null, &$out = array()) {
+    function &hook($name, $in = null, &$out = array(), $merge_result = false) {
         if (empty($this->_hooks[$name])) {
             return $out;
         }
@@ -237,13 +237,24 @@ class App extends Container {
         foreach ($hooks as &$same_weight_hooks) {
             foreach ($same_weight_hooks as $callback) {
                 $result =& $callback($in, $out, $this);
-                if (isset($result)) {
+                if ($merge_result && is_array($result)) {
+                    $out = array_merge($out, $result);
+                }
+                elseif (!$merge_result && isset($result)) {
                     $out =& $result;
                     return $out;
                 }
             }
         }
         return $out;
+    }
+    
+    /**
+     * Alias for $this->hook($name, $in, array(), $merge_result = true)
+     */
+    function infoHook($name, $in = null) {
+        $out = array();
+        return $this->hook($name, $in, $out, true);
     }
     
     
@@ -316,7 +327,7 @@ class App extends Container {
     public function service__config() {
         $app = $this;
         return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
-            return $app->hook('app.config');
+            return $app->infoHook('app.config');
         }));
     }
     

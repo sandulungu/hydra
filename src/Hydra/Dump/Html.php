@@ -22,9 +22,17 @@ class Html {
         $prefix = str_repeat("\t", $indent);
         
         if (is_object($data)) {
-            if (!method_exists($data, '__toString')) {
+            if ($data instanceof \Closure) {
+                $data = 'CALLBACK';
+                $em = true;
+            }
+            elseif (!method_exists($data, '__toString')) {
                 $data = get_object_vars($data);
                 $numeric = false;
+                if (!$data) {
+                    $data = 'OBJECT';
+                    $em = true;
+                }
             }
         }
         
@@ -40,7 +48,11 @@ class Html {
             if ($data) {
                 $data = "<li>$data</li>";
             }
-            $data = $numeric ? "\n$prefix<ol>$data</ol>\n" : "\n$prefix<ul>$data</ul>\n";
+            if (!$data) {
+                $data = "<em>EMPTY</em>";
+            } else {
+                $data = $numeric ? "\n$prefix<ol>$data</ol>\n" : "\n$prefix<ul>$data</ul>\n";
+            }
         }
         else if (is_bool($data)) {
             $data = $data ? 'TRUE' : 'FALSE';
@@ -54,7 +66,7 @@ class Html {
             $em = $strong = true;
         }
         elseif (is_float($data)) {
-            $strong = true;
+            $em = true;
         }
         elseif (is_resource($data)) {
             $data = 'RESOURCE';
@@ -72,6 +84,9 @@ class Html {
         }
         if ($strong) {
             $data = "<strong>$data</strong>";
+        }
+        if ($indent == 0) {
+            $data = "<div class='dump'>$data</div>";
         }
         return (string)$data;
     }

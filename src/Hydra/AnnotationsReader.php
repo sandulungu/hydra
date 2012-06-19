@@ -17,7 +17,7 @@ class AnnotationsReader extends Container {
         parent::__construct('annotation');
     }
     
-    function forMethod($classname, $method, $filter = array()) {
+    function forMethod($classname, $method, array $filter = array()) {
         $reflection = new \ReflectionMethod($classname, $method);
         return $this->_parseDocComment(
             $class->getDocComment(), 
@@ -26,7 +26,7 @@ class AnnotationsReader extends Container {
         );
     }
     
-    function forProperty($classname, $property, $filter = array()) {
+    function forProperty($classname, $property, array $filter = array()) {
         $reflection = new \ReflectionProperty($classname, $property);
         return $this->_parseDocComment(
             $class->getDocComment(), 
@@ -35,7 +35,7 @@ class AnnotationsReader extends Container {
         );
     }
     
-    function forClass($classname, $filter = array()) {
+    function forClass($classname, array $filter = array()) {
         $class = new \ReflectionClass($classname);
         $annotations = $this->_parseDocComment(
             $class->getDocComment(), 
@@ -62,7 +62,7 @@ class AnnotationsReader extends Container {
         return $annotations;
     }
     
-    protected function _parseDocComment($doc_comment, $filter, $defaults = array()) {
+    protected function _parseDocComment($doc_comment, $filter, array $defaults = array()) {
         $self = $this;
         return array_filter(array_map(function($line) use ($filter, $defaults, $self) {
             if ($line && preg_match('/^\s*\*\s*@[a-z]/i', $line)) {

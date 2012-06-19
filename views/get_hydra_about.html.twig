@@ -1,0 +1,68 @@
+{% extends 'default.html.twig' %}
+{% block response_body %}
+<article>
+    <p>The cozy RESTfull PHP5.3 micro-framework.</p>
+
+    <h2>
+        <a name="why-yet-another-framework" class="anchor" href="#why-yet-another-framework"><span class="mini-icon mini-icon-link"></span></a>Why yet another framework?</h2>
+
+    <p>Hydra's concept was born during the prototyping of not-very-big REST application.</p>
+
+    <p>Initialy I used Silex. At that moment I thought it was the best micro-framework for me to quickly wire-up the RESTfull routes with some MongoDB and PDO code. Some time later it was obvious that, while the closures and route patterns were nice and cool, the service container wasn't that good after all. No IDE autocompletion for services, strange syntax, un-intuitive functionality providers, that just didn't work out-of-the-box. Another thing, I noticed was the slow router and heavy request/response architecture, while I only needed basic IO, mostly already provided natively by PHP. Of course, there were nice things, but that's not the point...</p>
+
+    <p>The point is that the very most of the frameworks, even tiny ones are just overbloated with reinventing better implementations of standard features that are already available in PHP. While there are some exceptions, most of them give very small added value and they slow everything down. Even worse, many of them are ported form other technologies or have fetish-OOP features that just don't fit well in the PHP world.</p>
+
+    <h2>
+        <a name="what-is-it-like" class="anchor" href="#what-is-it-like"><span class="mini-icon mini-icon-link"></span></a>What is it like?</h2>
+
+    <p>It's a little bit of Symfony, a little of Pimple, some Teiw, with a breeze of Bootstrap.</p>
+
+    <p>Compact, speedy, easy to learn and, most importantly, productive. Hope these words will be associated with Hydra soon. And maybe one day Hydra will be seen as PHP's jQuery lib.</p>
+
+    <h2>
+        <a name="whats-the-deal" class="anchor" href="#whats-the-deal"><span class="mini-icon mini-icon-link"></span></a>What's the deal?</h2>
+
+    <p>A micro-framework with everything you'll usualy want in just 300kB (including vendor libs).</p>
+
+    <p>What it has out of box:</p>
+
+    <ul>
+        <li>
+            <em>Service container</em>, inluding with the possibility to inject methods and extend them at runtime. No more problems with extending core classes.</li>
+        <li>
+            <em>Hooking system</em> with intuitive execution flow control (weighted hooks) and auto-scan of plugin hook files.</li>
+        <li>
+            <em>MongoDB</em> and <em>PDO</em> support - I like these, so they've got from me a total of 40 lines of code and ease of usage through the service container :)</li>
+        <li>
+            <em>Caching</em> - to run even faster when in prod.</li>
+        <li>
+            <em>RESTfull router</em> with support for both, callback and <em>controller</em> classes.</li>
+        <li>
+            <em>Parameter normalization</em> for safety and easy, multi-format <em>data dumping</em> for super-quick web-service driven application prototyping.</li>
+        <li>Simple <em>Requests/Response</em> workflow with ability to stream content; hooks at every step with flow control and intreruption abilities.</li>
+        <li>
+            <em>Session</em>, <em>Cookies</em> and <em>Persistent Configuration</em> - just set a property/value in these array-access enabled services and it will be there on subsequent request. Magic!</li>
+        <li>
+            <em><a href="http://twig.sensiolabs.org/">Twig</a> template engine</em> because native PHP templates, well, suck and Fabien's solution rulezzz.</li>
+        <li>
+            <em><a href="https://github.com/Seldaek/monolog">Monolog</a></em> + FirePHP/ChromePHP support and Symfony's <em>Exceptions handler</em> with debug/production presets - for a nice time spending while debugging.</li>
+        <li>Extremely friendly with IDE. All services and dynamic methods support autocompletion.</li>
+        <li>Distribution as standalone <em>phar</em> or as a <em>Composer package</em>.</li>
+        <li>Clean UI created with <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a>.</li>
+    </ul><p>All the features above are provided only as default solutions and may be easily reconfigured/extended/overwritten without even creating a new class. Just use services, methods injecting and hooks.</p>
+
+    <h2>
+        <a name="why-you-called-it-hydra" class="anchor" href="#why-you-called-it-hydra"><span class="mini-icon mini-icon-link"></span></a>Why you called it "Hydra"?</h2>
+
+    <p>Because of the vision. A hydra (mitological creature) can grow heads dynamically. </p>
+
+    <p>We tried to apply this ad-hoc grouwing to OOP. Until version 5.3 this was harder to achieve and before 5.0 imposible at all. Now, that we've got magic methods, closures, SPL and the classical interpretor features we had the opportunity to combine them all into a very flexible, yet simple dependency injection system. It's some kind of multiple inheritance and runtime morphing of objects.</p>
+
+    <h2>
+        <a name="want-more" class="anchor" href="#want-more"><span class="mini-icon mini-icon-link"></span></a>Want more?</h2>
+
+    <p>Hydra is right now in an early stage of development, so your feedback is VERY, VERY important.
+        Share, discuss, post issues and feature requests, write review. The best for PHP has yet to come and .
+        My email is <em>sandu(a)lungu.info</em></p>
+</article>
+{% endblock %}
