@@ -19,6 +19,8 @@ namespace Hydra;
  * @property string $i18n__default_lang
  * @property array  $cookie
  * @property array  $session
+ * @property array  $security
+ * @property array  $response
  * @property array  $assets__js
  * @property array  $assets__csss
  * 

@@ -29,6 +29,19 @@ $hooks['request.route'][1000][] = function (Request $request) {
     }
 };
 
+// Check CRSF token.
+$hooks['request.dispatch'][-1000][] = function (Request $request, &$response, App $app) {
+    if ($app->config->security['token.autocheck'] && !in_array($request->method, array('HEAD', 'GET'))) {
+        $param = $app->config->security['token.param'];
+        if (empty($request->data[$param])) {
+            throw new Exception\InvalidTokenHttpException("Security token missing. All non-GET methods should post a 'token' parameter.");
+        }
+        if ($request->data[$param] != $app->security__token) {
+            throw new Exception\InvalidTokenHttpException('An invalid or expired token has been specified.');
+        }
+    }
+};
+
 // Default dispatcher.
 $hooks['request.dispatch'][0][] = function (Request $request, &$response) {
     
@@ -37,7 +50,7 @@ $hooks['request.dispatch'][0][] = function (Request $request, &$response) {
     }
     
     if (is_string($response)) {
-        $response = $request->app->config['response.render_string'] ?
+        $response = $request->app->config->response['render_string'] ?
             new Response\RenderedResponse($request, null, $response) :
             new Response($request, $response);
     }
@@ -54,4 +67,13 @@ $hooks['request.dispatch'][0][] = function (Request $request, &$response) {
 // If no view was rendered so far, then there's something wrong.
 $hooks['response.render'][1000][] = function (Response $response) {
     throw new \LogicException("View not rendered: {$response->view}");
+};
+
+// Security related headers.
+$hooks['response.output_prepare'][-1000][] = function (Response $response) {
+    if ($response->request->isMain) {
+        foreach ($response->app->config->security['headers'] as $header => $value) {
+            $response->headers[$header] = $value;
+        }
+    }
 };

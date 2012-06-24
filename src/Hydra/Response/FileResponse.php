@@ -55,7 +55,7 @@ class FileResponse extends Response {
             if ($phpfile) {
                 require $filename;
             } else {
-                if ($app->config['response.x_sendfile']) {
+                if ($app->config->response['x_sendfile']) {
                     $filename = realpath($filename);
                     header("X-Sendfile: $filename");
                 } else {

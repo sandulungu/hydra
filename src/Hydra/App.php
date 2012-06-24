@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @property \MongoDB           $mongodb
  * @property AnnotationsReader  $annotationsReader
  * @property string             $security__salt
+ * @property string             $security__token
  * 
  * @property \Hydra\MimeType\MimeTypeGuesser          $mimetype__guesser
  * @property \Hydra\MimeType\ExtensionMimeTypeGuesser $mimetype__extensionGuesser
@@ -33,7 +34,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @property \Monolog\Logger    $monolog__debug
  * 
  * @method bool     run()
- * @method mixed    cache($name, $value = null, $reset = false)
+ * @method mixed    cache($name, $value = null, $ttl = 0, $reset = null)
  * @method mixed    config__persist($name, $value, $reset)
  * 
  * @method mixed    dump__json($data)
@@ -288,9 +289,22 @@ class App extends Container {
     
     /**
      * Pluggable caching engine.
+     * 
+     * @param string         $name  Cache key.
+     * @param \Closure|mixed $value
+     * @param int            $ttl   Time to live in seconds.
+     * @param bool           $reset If not set, the cache will be always resetted in debug mode.
+     * @return mixed
      */
-    protected function fallback__cache($name, $value = null, $reset = false) {
-        return $this->persist("{$this->core->cache_dir}/$name", $value, $this->core->debug || $reset);
+    protected function fallback__cache($name, $value = null, $ttl = 0, $reset = null) {
+        $filename = "{$this->core->cache_dir}/$name";
+        if ($reset === null && $this->core->debug) {
+            $reset = true;
+        }
+        if ($ttl && !$reset && file_exists($filename)) {
+            $reset = filemtime($filename) + $reset <= time();
+        }
+        return $this->persist($filename, $value, $reset);
     }
 
     /**
@@ -368,10 +382,31 @@ class App extends Container {
         }
     }
 
+    /**
+     * Generates CSRF protection token and caches it in a session cookie on the client-side.
+     */
+    public function service__security__token() {
+        $token_cookie = $this->config->security['token.cookie'];
+        if (isset($this->cookie[$token_cookie])) {
+            return $this->cookie[$token_cookie];
+        }
+        $token = $this->hash(mt_rand(), false, 1);
+        $this->cookie->set($token_cookie, $token, 0);
+        return $token;
+    }
+
+    /**
+     * Default mime-type guesser.
+     */
     protected function service__mimetype__guesser() {
         return new MimeType\MimeTypeGuesser;
     }
     
+    /**
+     * Extension-based mime-type guesser.
+     * 
+     * Used for setting default content type for main responses.
+     */
     protected function service__mimetype__extensionGuesser() {
         return new MimeType\ExtensionMimeTypeGuesser;
     }

@@ -15,8 +15,9 @@ namespace Hydra;
 $hooks['app.config'][-1000][] = function (&$config) {
     $config['i18n.default_lang'] = 'en';
     $config['vendor.web_dirs'] = array();
-    $config['response.x_sendfile'] = false;
-    $config['response.render_string'] = true;
+    
+    $config['response']['x_sendfile'] = false;
+    $config['response']['render_string'] = true;
     
     $config['session']['name'] = 'hydra';
     
@@ -25,6 +26,16 @@ $hooks['app.config'][-1000][] = function (&$config) {
     $config['cookie']['domain'] = null;
     $config['cookie']['secure'] = null;
     $config['cookie']['httponly'] = null;
+    
+    // Do not override these if you don't know exactly what you're doing.
+    $config['security']['token.cookie'] = 'hydra.token';
+    $config['security']['token.autocheck'] = true;
+    $config['security']['token.param'] = 'token';
+    $config['security']['headers'] = array(
+        'X-Frame-Options' => 'SAMEORIGIN',
+        'X-Content-Type-Options' => 'nosniff',
+        'X-XSS-Protection' => '1;mode=block',
+    ); 
     
     $config['assets.js'] = array();
     $config['assets.css'] = array();

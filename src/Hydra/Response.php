@@ -70,7 +70,9 @@ class Response {
         }
         if ($this->headers) {
             foreach($this->headers as $header => $value) {
-                header("$header: $value");
+                if ($value) {
+                    header("$header: $value");
+                }
             }
         }
         
