@@ -17,10 +17,16 @@ $hooks['app.routes'][-1000][] = function () {
         
         // Setup core routes: assets delivery.
         array('vendor/%vendor:vendor_web_dir/%path*/', function($request, $vendor, $path) {
-            return new Response\FileResponse($request, "$vendor/$path");
+            if (substr($path, -4) == '.php') {
+                throw new Exception\InvalidActionParamException("'.php' extension should not be specified in a vendor asset filename.");
+            }
+            return new Response\FileResponse($request, file_exists("$vendor/$path.php") ? "$vendor/$path.php" : "$vendor/$path");
         }),
         array('plugins/%plugin:plugin_web_dir/%path*/', function($request, $plugin, $path) {
-            return new Response\FileResponse($request, "$plugin/$path");
+            if (substr($path, -4) == '.php') {
+                throw new Exception\InvalidActionParamException("'.php' extension should not be specified in a plugin asset filename.");
+            }
+            return new Response\FileResponse($request, file_exists("$vendor/$path.php") ? "$vendor/$path.php" : "$plugin/$path");
         }),
                 
         // About pages

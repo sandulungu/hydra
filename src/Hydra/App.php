@@ -53,6 +53,8 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  */
 class App extends Container {
     
+    const PERSIST_RESET_USE_CALLBACK = 'callback';
+    
     protected $_hooks = array(), $_hookFiles = array();
     var $requests = array(), $routes__defined = false;
     
@@ -149,7 +151,7 @@ class App extends Container {
      * @return Response
      */
     public function dispatch($path, $method = 'GET', $query = array(), $data = null) {
-        $request = new Request($this, $path, $_SERVER['REQUEST_METHOD'], $_GET, $data);
+        $request = new Request\HttpRequest($this, $path, $method, $query, $data, $_SERVER);
         $this->requests[] = $request;
         $response = $request->dispatch();
         return $response;
@@ -172,7 +174,12 @@ class App extends Container {
         }
         
         if (isset($value)) {
-            $data = $value instanceof \Closure ? $value() : $value;
+            if ($reset === self::PERSIST_RESET_USE_CALLBACK && $value instanceof \Closure) {
+                $data = file_exists($filename) ? unserialize(file_get_contents($filename)) : null;
+                $data = $value($data);
+            } else {
+                $data = $value instanceof \Closure ? $value() : $value;
+            }
             file_put_contents($filename, serialize($data));
             return $data;
         }

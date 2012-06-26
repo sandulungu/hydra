@@ -16,6 +16,7 @@ $hooks['app.config'][-1000][] = function (&$config) {
     $config['i18n.default_lang'] = 'en';
     $config['vendor.web_dirs'] = array();
     
+    $config['response']['guess_php_contentType'] = true;
     $config['response']['x_sendfile'] = false;
     $config['response']['render_string'] = true;
     
@@ -39,6 +40,8 @@ $hooks['app.config'][-1000][] = function (&$config) {
     
     $config['assets.js'] = array();
     $config['assets.css'] = array();
+    
+    $config['app']['title'] = 'Hydra';
 };
 
 // Load app configuration options from config file.

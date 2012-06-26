@@ -37,9 +37,14 @@ class RenderedResponse extends Response {
             if ($this->view) {
                 $this->variables += array(
                     'response' => $this,
-                    'baseurl' => $this->app->core->baseurl,
-                    'webroot' => $this->app->core->webroot,
                 );
+                if ($this->request instanceof Request\HttpRequest) {
+                    $this->variables += array(
+                        'baseurl' => $this->request->baseurl,
+                        'webroot' => $this->request->webroot,
+                        'webhost' => $this->request->webhost,
+                    );
+                }
                 $this->content = $this->app->hook('response.render', $this);
             } else {
                 $this->content = $this->variables['body'];

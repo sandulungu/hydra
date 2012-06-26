@@ -58,6 +58,43 @@ class Response {
         return $this->content;
     }
     
+    /**
+     * Formats cache-control headers.
+     *
+     * @param int  $ttl  Time to live in seconds
+     * @param bool $send True to send headers immediately, false to append to $this->headers.
+     */
+    function expires($ttl = 3600, $send = false) {
+        if ($ttl) {
+            $headers['Expires'] = gmdate(DATE_RFC2822, time() + $ttl);
+        } else {
+            // No cache
+        }
+        
+        if ($send) {
+            $this->_sendHeaders($headers);
+        } else {
+            $this->headers = $headers + $this->headers;
+        }
+        return $this;
+    }
+    
+    protected function _sendHeaders($headers) {
+        foreach($headers as $header => $value) {
+            if ($value) {
+                if (is_array($value)) {
+                    $replace = true;
+                    foreach ($value as $v) {
+                        header("$header: $v", $replace);
+                        $replace = false;
+                    }
+                } else {
+                    header("$header: $value");
+                }
+            }
+        }
+    }
+    
     function output() {
         $this->app->hook('response.output_prepare', $this);
         
@@ -69,11 +106,7 @@ class Response {
             header(sprintf('HTTP/1.1 %s %s', $this->statusCode, SymfonyResponse::$statusTexts[$this->statusCode]));
         }
         if ($this->headers) {
-            foreach($this->headers as $header => $value) {
-                if ($value) {
-                    header("$header: $value");
-                }
-            }
+            $this->_sendHeaders($this->headers);
         }
         
         // Streaming support.

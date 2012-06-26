@@ -12,3 +12,7 @@
 namespace Hydra;
 
 $methods = $services = $hooks = array();
+
+$response = new Response;
+$request  = new Request\HttpRequest;
+$app      = new App;

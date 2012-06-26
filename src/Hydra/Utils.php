@@ -14,6 +14,24 @@ namespace Hydra;
 class Utils {
     
     /**
+     * Formats a string as a slug
+     */
+    static function sluggify($str, $preg_filter = "/[^a-z0-9]+/", $callback = 'strtolower', $default = 'untitled') {
+        try {
+            $str = iconv('UTF-8', 'ASCII//TRANSLIT', $str); // translit non-ascii characters
+        } catch (Exception $ex) {
+        }
+        if ($callback) {
+            $str = $callback($str);
+        }
+        if ($preg_filter) {
+            $str = preg_replace($preg_filter, '_', $str); // filter unallowed chars
+        }
+        $str = trim($str, '_ ');
+        return $str ? $str : $default;
+    }
+    
+    /**
      * Creates a new $class($args[0], $args[1], ...) instance.
      */
     static function createClassInstance($classname, $args) {

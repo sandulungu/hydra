@@ -1,0 +1,112 @@
+{% block html %}{#% spaceless %#}
+<!DOCTYPE html>
+<html lang="{{ request.lang|default('en') }}">
+    <head>
+        <title>{% block head_title title|default(response.app.config.app.title) %}</title>
+
+        {% block head_meta %}
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="generator" content="https://github.com/z7/hydra">
+        {% endblock %}
+
+        <!-- Le styles -->
+        {% block head_css %}
+        <link href="//current.bootstrapcdn.com/bootstrap-v204/css/bootstrap-combined.min.css" rel="stylesheet">
+        {% for css in response.app.config['assets.css'] %}
+        <link href="{{ css }}" rel="stylesheet">
+        {% endfor %}
+        {% endblock %}
+        <style>
+            {%- block head_style -%}
+            body {
+                padding-top: 55px;
+            }
+            .dump em {
+                color: #00c;
+                font-style: normal;
+            }
+            .dump strong {
+                color: #257;
+            }
+            .dump strong em {
+                color: #a20;
+                font-weight: normal;
+            }
+            {%- endblock -%}
+        </style>
+
+        {% block head_scripts %}
+        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        {% endblock %}
+
+    </head>
+
+    <body>
+        {% block body %}
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="{{ baseurl }}">{% block navbar_title response.app.config.app.title %}</a>
+                    {% block nav ''%}
+                    {% if response.app.core.debug %}
+                    <ul class="nav pull-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Debug <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{ baseurl }}/hydra/debug/config">Configuration</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/routes">Routes</a></li>
+                                <li class="divider"></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/session">Session</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/cookie">Cookies</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/server">Server</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/env">Environment</a></li>
+                                <li class="divider"></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/phpinfo">phpinfo()</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    {% endif %}
+                    <ul class="nav pull-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="https://github.com/z7/hydra">Hydra homepage</a></li>
+                                <li><a href="http://twig.sensiolabs.org">Twig homepage</a></li>
+                                <li><a href="http://twitter.github.com/bootstrap">Twitter Bootstrap homepage</a></li>
+                                <li class="divider"></li>
+                                <li><a href="{{ baseurl }}/hydra/about">About Hydra</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            {% block response_title %}
+                {% if title is defined %}
+                    <h1>{{ title }}</h1>
+                {% endif %}
+            {% endblock %}
+            {% block response_body body|default('No content defined')|raw %}
+            <hr>
+            <footer>
+                <p>Powered by <a href="https://github.com/z7/hydra">Hydra micro-framework</a>.</p>
+            </footer>
+        </div> <!-- /container -->
+        {% endblock body %}
+        
+        {% block scripts %}
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script src="//current.bootstrapcdn.com/bootstrap-v204/js/bootstrap.min.js"></script>
+        {% for script in response.app.config['assets.js'] %}
+        <script src="{{ script }}"></script>
+        {% endfor %}
+        {% endblock %}
+    </body>
+</html>
+{#% endspaceless %#}{% endblock html %}

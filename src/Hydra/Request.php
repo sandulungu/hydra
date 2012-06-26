@@ -12,10 +12,7 @@
 namespace Hydra;
 
 /**
- * HTTP Request holder.
- * 
- * This class does not contain cookies or server environment variable, as they are only relevant to the main request.
- * If needed, just use PHP's native $_COOKIE and $_SERVER.
+ * Request holder.
  * 
  * @property Action $action
  * @property array $params
@@ -65,6 +62,14 @@ class Request extends Container {
     function service__action() {
         $action = $this->app->hook('request.route', $this);
         if (!$action) {
+            
+            // Dynamic assets serving support
+            if (file_exists("$this->path.php")) {
+                return new Action(function(Request $request) {
+                    return new Response\FileResponse($request, "$request->path.php");
+                });
+            }
+            
             throw new Exception\NotFoundHttpException("No route matched path: {$this->path}.");
         }
         return $action;
