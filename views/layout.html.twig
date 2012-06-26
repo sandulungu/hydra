@@ -20,9 +20,9 @@
         {% endblock %}
         <style>
             {%- block head_style -%}
-            body {
+            @media(min-width: 980px) { body {
                 padding-top: 55px;
-            }
+            }}
             .dump em {
                 color: #00c;
                 font-style: normal;
@@ -95,7 +95,9 @@
             {% block response_body body|default('No content defined')|raw %}
             <hr>
             <footer>
+                {% block footer %}
                 <p>Powered by <a href="https://github.com/z7/hydra">Hydra micro-framework</a>.</p>
+                {% endblock footer %}
             </footer>
         </div> <!-- /container -->
         {% endblock body %}

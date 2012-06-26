@@ -33,6 +33,9 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @property \Monolog\Logger    $monolog__main
  * @property \Monolog\Logger    $monolog__debug
  * 
+ * @method \Net\Curl\Curl      curl()
+ * @method \Net\Curl\CurlMulti curl__multi()
+ * 
  * @method bool     run()
  * @method mixed    cache($name, $value = null, $ttl = 0, $reset = null)
  * @method mixed    config__persist($name, $value, $reset)
@@ -309,7 +312,7 @@ class App extends Container {
             $reset = true;
         }
         if ($ttl && !$reset && file_exists($filename)) {
-            $reset = filemtime($filename) + $reset <= time();
+            $reset = filemtime($filename) + $ttl <= time();
         }
         return $this->persist($filename, $value, $reset);
     }

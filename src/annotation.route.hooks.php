@@ -49,8 +49,11 @@ $methods['annotation.route'][] = function(AnnotationsReader $reader, $annotation
     }
     
     $name = $defaults['%controller'] = $annotation['class'];
+    $name .= "::{$annotation['method']}()";
+    if (substr($annotation['method'], -6) != 'Action') {
+        throw new \LogicException("All routed controller actions should be prefixed with 'Action'. Please rename $name.");
+    }
     $defaults['action'] = substr($annotation['method'], 0 , -6);
-    $name .= "::{$defaults['action']}()";
     
     if (!in_array($http_method, array('GET', 'POST', 'PUT', 'DELETE'))) {
         throw new \DomainException("Http method should be one of: 'GET', 'POST', 'PUT', 'DELETE', but '$http_method' given in $name annotation.");

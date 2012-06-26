@@ -55,7 +55,7 @@ class HttpRequest extends Request {
         if ($url_rewritten) {
             $uri = $_SERVER['REQUEST_URI'];
             for($i = 0; $i < strlen($uri) && $i < strlen($baseurl) && $uri{$i} == $baseurl{$i}; $i++) {}
-            $this->webroot = $baseurl = rtrim(substr($baseurl, 0, $i), '/');
+            $this->webroot = $baseurl = rtrim(substr($baseurl, 0, $i - 1), '/');
         } else {
             $this->webroot = dirname($baseurl);
         }

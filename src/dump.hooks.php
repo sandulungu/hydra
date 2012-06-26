@@ -12,6 +12,9 @@
 namespace Hydra;
 
 $methods['app.dump.json'][0] = function(App $app, $data) {
+    if (defined('JSON_PRETTY_PRINT') && $app->core->debug) {
+        return json_encode($data, JSON_PRETTY_PRINT);
+    }
     return json_encode($data);
 };
 
