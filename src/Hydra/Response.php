@@ -41,7 +41,7 @@ class Response {
         // Set Content-Type header
         // Note: MimeTypeGuesser is a heavy class, so don't load it unnecessary
         $this->format = $request->params['format'];
-        if ($request->isMain && $this->format != 'html') {
+        if ($request->isMain && $this->format != 'html' && empty($this->headers['Location'])) {
             $this->headers['Content-Type'] = $request->app->mimetype__extensionGuesser->guess($this->format);
         }
                 

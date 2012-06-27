@@ -17,9 +17,10 @@ $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
         'cache' => "{$app->core->cache_dir}/twig",
         'debug' => $app->core->debug,
     );
-    $config['twig.dirs'] = array(
-        $app->core->app_views_dir,
-    );
+    $config['twig.dirs'] = array();
+    if (is_dir($app->core->app_views_dir)) {
+        $config['twig.dirs'][] = $app->core->app_views_dir;
+    }
 };
 
 // Core views dir should be the last one in the list.

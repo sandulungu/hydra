@@ -114,7 +114,9 @@ class Container implements \ArrayAccess {
     
     function offsetExists($offset) {
         $name = str_replace('.', '__', $offset);
-        return property_exists($this, $name);
+        return property_exists($this, $name) || 
+               isset(self::$_containerCallbacks['services'][$offset]) || 
+               method_exists($this, "service__$name");
     }
 
     function offsetGet($offset) {

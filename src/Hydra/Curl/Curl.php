@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
@@ -29,84 +30,38 @@ namespace Hydra\Curl;
  *
  * @author Alexey Karapetov <karapetov@gmail.com>
  */
-class Curl
-{
-    
-    const DATA_TYPE_RAW        = false;
-    const DATA_TYPE_JSON       = 'application/json';
+class Curl {
+
+    const DATA_TYPE_RAW = false;
+    const DATA_TYPE_JSON = 'application/json';
     const DATA_TYPE_URLENCODED = 'application/x-www-form-urlencoded';
-    
-    /**
-     * Performs a POST request.
-     * 
-     * @param string $url Url to POST to
-     * @param mixed $data Data to POST
-     * @param string|false|null $certificate CA certificate filename
-     * @param string $data_type What content type to use for the data. 
-     *   A few special content types will also auto-encode data.
-     * @param mixed $charset
-     * @return string Response
-     */
-    static function post($url, $data, $certificate = null, $data_type = self::DATA_TYPE_JSON, $charset = 'utf-8') {
-        $curl = new static($url, $certificate);
-        $curl->setOpt(CURLOPT_POST, true);
-        $curl->setOpt(CURLOPT_RETURNTRANSFER, true);
-        
-        if ($data_type == self::DATA_TYPE_JSON) {
-            $data = json_encode($data);
-        }
-        elseif ($data_type == self::DATA_TYPE_URLENCODED && !is_string($data)) {
-            $data = http_build_query($data);
-        }
-        $curl->setOpt(CURLOPT_POSTFIELDS, $data);
-        
-        if ($data_type) {
-            $curl->setOpt(CURLOPT_HTTPHEADER, array("Content-Type: $data_type;charset=$charset"));
-        }
-        
-        return $curl->exec();
-    }
-    
+
     /**
      * @var handler
      */
     private $__handle;
+    public $httpHeaders = array();
+
+    /**
+     * @see curl_version()
+     *
+     * @param int $age
+     * @return array
+     */
+    static function version($age = CURLVERSION_NOW) {
+        return curl_version($age);
+    }
 
     /**
      * @param string $url URL
      * @param string|false|null $certificate CA certificate filename
      */
-    public function __construct($url = null, $certificate = null)
-    {
+    function __construct($url = null, $certificate = null) {
         $this->__handle = curl_init($url);
         if (isset($certificate)) {
             $this->setCAInfo($certificate);
         }
-    }
-    
-    /**
-     *
-     * @param string|false $certificate CA certificate filename
-     */
-    public function setCAInfo($certificate) {
-        if ($certificate) {
-            $this->setOpt(CURLOPT_SSL_VERIFYPEER, true);
-            $this->setOpt(CURLOPT_SSL_VERIFYHOST, 2);
-            $this->setOpt(CURLOPT_CAINFO, $certificate);
-        } 
-        elseif ($certificate === false) {
-            $this->setOpt(CURLOPT_SSL_VERIFYPEER, false);
-        }
-    }
-
-    /**
-     * Get curl handle
-     *
-     * @return resource
-     */
-    public function getHandle()
-    {
-        return $this->__handle;
+        $this->setOpt(CURLOPT_RETURNTRANSFER, true);
     }
 
     /**
@@ -114,9 +69,17 @@ class Curl
      *
      * @return void
      */
-    public function __destruct()
-    {
+    function __destruct() {
         curl_close($this->__handle);
+    }
+
+    /**
+     * Copies handle using curl_copy_handle()
+     *
+     * @return void
+     */
+    function __clone() {
+        $this->__handle = curl_copy_handle($this->__handle);
     }
 
     /**
@@ -124,8 +87,7 @@ class Curl
      *
      * @return int
      */
-    public function errno()
-    {
+    function errno() {
         return curl_errno($this->__handle);
     }
 
@@ -134,43 +96,8 @@ class Curl
      *
      * @return string
      */
-    public function error()
-    {
+    function error() {
         return curl_error($this->__handle);
-    }
-
-    /**
-     * @see curl_exec()
-     *
-     * @param int $attempts Connection attempts (default is 1)
-     * @param boolean $useException Throw \RuntimeException on failure
-     * @return boolean|string
-     */
-    public function exec($attempts = 1, $useException = true)
-    {
-        $attempts = (int) $attempts;
-
-        if ($attempts < 1)
-        {
-            throw new \InvalidArgumentException("Attempts count ({$attempts}) is not positive");
-        }
-
-        $i = 0;
-        while ($i++ < $attempts)
-        {
-            $result = curl_exec($this->__handle);
-            if ($result !== false)
-            {
-                break;
-            }
-        }
-
-        if ($useException && (false === $result))
-        {
-            throw new \RuntimeException("{$this->error()} after {$attempts} attempt(s). " . var_export($this->getInfo(0), true), $this->errno());
-        }
-
-        return $result;
     }
 
     /**
@@ -179,8 +106,7 @@ class Curl
      * @param int $opt CURLINFO_*
      * @return array|string
      */
-    public function getInfo($opt = 0)
-    {
+    function getInfo($opt = 0) {
         return curl_getinfo($this->__handle, $opt);
     }
 
@@ -191,8 +117,7 @@ class Curl
      * @param mixed $value  Option value
      * @return boolean
      */
-    public function setOpt($option, $value)
-    {
+    function setOpt($option, $value) {
         return curl_setopt($this->__handle, $option, $value);
     }
 
@@ -202,29 +127,108 @@ class Curl
      * @param array $options Options
      * @return boolean
      */
-    public function setOptArray(array $options)
-    {
+    function setOptArray(array $options) {
         return curl_setopt_array($this->__handle, $options);
     }
 
     /**
-     * @see curl_version()
+     * Get curl handle
      *
-     * @param int $age
-     * @return array
+     * @return resource
      */
-    public static function version($age = CURLVERSION_NOW)
-    {
-        return curl_version($age);
+    function getHandle() {
+        return $this->__handle;
     }
 
     /**
-     * Copies handle using curl_copy_handle()
+     * Configures SSL certification chain
      *
-     * @return void
+     * @param string|false $certificate CA certificate filename
      */
-    public function __clone()
-    {
-        $this->__handle = curl_copy_handle($this->__handle);
+    function setCAInfo($certificate) {
+        if ($certificate) {
+            $this->setOpt(CURLOPT_SSL_VERIFYPEER, true);
+            $this->setOpt(CURLOPT_SSL_VERIFYHOST, 2);
+            $this->setOpt(CURLOPT_CAINFO, $certificate);
+        } elseif ($certificate === false) {
+            $this->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        }
     }
+    
+    /**
+     * @see CURLOPT_USERPWD  
+     */
+    function setBasicAuth($username, $password = '') {
+        $this->setOpt(CURLOPT_USERPWD, "$username:$password");
+    }
+
+    /**
+     * Performs a POST request.
+     * 
+     * @param mixed $data Data to POST
+     * @param string $data_type What content type to use for the data. 
+     *   A few special content types will also auto-encode data.
+     * @param mixed $charset
+     * @return string Response
+     */
+    function post($data, $data_type = self::DATA_TYPE_JSON, $charset = 'utf-8') {
+        $this->setOpt(CURLOPT_POST, true);
+
+        if ($data_type == self::DATA_TYPE_JSON) {
+            $data = json_encode($data);
+        } elseif ($data_type == self::DATA_TYPE_URLENCODED && !is_string($data)) {
+            $data = http_build_query($data);
+        }
+        $this->setOpt(CURLOPT_POSTFIELDS, $data);
+
+        if ($data_type && !isset($this->httpHeaders["Content-Type"])) {
+            $this->httpHeaders["Content-Type"] = "$data_type;charset=$charset";
+        }
+
+        return $this->exec();
+    }
+
+    /**
+     * Performs the request(s). By default it will be a GET request.
+     * @see curl_exec()
+     *
+     * @param int $attempts Connection attempts (default is 1)
+     * @param boolean $useException Throw \RuntimeException on failure
+     * @return boolean|string
+     */
+    function exec($attempts = 1, $useException = true) {
+        $attempts = (int) $attempts;
+        if ($attempts < 1) {
+            throw new \InvalidArgumentException("Attempts count ({$attempts}) is not positive.");
+        }
+
+        $headers = array();
+        foreach ($this->httpHeaders as $name => $value) {
+            if ($value) {
+                if (is_array($value)) {
+                    foreach ($value as $v) {
+                        $headers[] = "$name: $v";
+                    }
+                } else {
+                    $headers[] = "$name: $value";
+                }
+            }
+        }
+        $this->setOpt(CURLOPT_HTTPHEADER, $headers);
+        
+        $i = 0;
+        while ($i++ < $attempts) {
+            $result = curl_exec($this->__handle);
+            if ($result !== false) {
+                break;
+            }
+        }
+
+        if ($useException && (false === $result)) {
+            throw new \RuntimeException("{$this->error()} after {$attempts} attempt(s). " . var_export($this->getInfo(0), true), $this->errno());
+        }
+
+        return $result;
+    }
+
 }

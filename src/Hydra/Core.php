@@ -58,7 +58,7 @@ class Core {
             \Symfony\Component\HttpKernel\Debug\ErrorHandler::register();
         }
         
-        foreach (array('data_dir', 'cache_dir', 'logs_dir', 'app_views_dir') as $name) {
+        foreach (array('data_dir', 'cache_dir', 'logs_dir') as $name) {
             if (!is_dir($config[$name])) {
                 mkdir($config[$name]);
             }

@@ -21,7 +21,7 @@ $hooks['app.routes'][0][] = function (App $app) {
             }
             
             $classname = str_replace('/', '\\', substr($file, strlen($app->core->app_src_dir), -4));
-            $routes = array_merge($routes, $app->annotationsReader->forClass($classname));
+            $routes = array_merge($routes, $app->annotationsReader->forClass($classname, array('route')));
         }
         return $routes;
     });

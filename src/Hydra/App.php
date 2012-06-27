@@ -284,7 +284,7 @@ class App extends Container {
                 $data = null;
             }
         } else {
-            $data = $_POST;
+            $data =& $_POST;
         }
 
         $path = ltrim(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : @$_GET['path'], '/');
@@ -358,8 +358,8 @@ class App extends Container {
     /**
      * Cookies provider.
      */
-    public function &service__cookie() {
-        return new Cookie();
+    public function service__cookie() {
+        return new Cookie($this);
     }
 
     /**

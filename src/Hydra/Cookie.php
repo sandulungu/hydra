@@ -31,12 +31,13 @@ class Cookie implements \ArrayAccess {
     
     protected $_data;
 
-    function __construct($app) {
+    function __construct(App $app) {
         $this->_app = $app;
         $this->_data =& $_COOKIE;
     }
 
-    function set($name, $value, $expiresIn = null, $path = null, $domain = null, $secure = null, $httponly = null) {
+    function set($offset, $value, $expiresIn = null, $path = null, $domain = null, $secure = null, $httponly = null) {
+        $name = str_replace('.', '__', $offset);
         $this->_data[$name] = $value;
         setcookie(
             $name, $value, 
@@ -65,11 +66,13 @@ class Cookie implements \ArrayAccess {
     }
     
     function offsetExists($offset) {
-        return array_key_exists($offset, $this->_data);
+        $name = str_replace('.', '__', $offset);
+        return array_key_exists($name, $this->_data);
     }
 
     function offsetGet($offset) {
-        return $this->_data[$offset];
+        $name = str_replace('.', '__', $offset);
+        return $this->_data[$name];
     }
 
     function offsetSet($offset, $value) {
@@ -78,7 +81,8 @@ class Cookie implements \ArrayAccess {
 
     function offsetUnset($offset) {
         $this->set($offset, '');
-        unset($this->_data[$offset]);
+        $name = str_replace('.', '__', $offset);
+        unset($this->_data[$name]);
     }
 
 }
