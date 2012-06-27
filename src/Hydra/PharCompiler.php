@@ -65,7 +65,7 @@ class PharCompiler {
 
         $phar->setStub($this->getStub());
         $phar->stopBuffering();
-        // $phar->compressFiles(\Phar::GZ);
+//        $phar->compressFiles(\Phar::GZ);
     }
 
     protected function addFile($phar, $file, $strip = true)

@@ -117,7 +117,7 @@ class Container implements \ArrayAccess {
         return property_exists($this, $name);
     }
 
-    function &offsetGet($offset) {
+    function offsetGet($offset) {
         if (strpos($offset, 'method:') === 0) {
             $self = $this;
             $callback = $this->__getMethod(substr($offset, 7), $is_remote);

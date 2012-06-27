@@ -93,9 +93,9 @@
                 {% endif %}
             {% endblock %}
             {% block response_body body|default('No content defined')|raw %}
-            <hr>
             <footer>
                 {% block footer %}
+                <hr>
                 <p>Powered by <a href="https://github.com/z7/hydra">Hydra micro-framework</a>.</p>
                 {% endblock footer %}
             </footer>

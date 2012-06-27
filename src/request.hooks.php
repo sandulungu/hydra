@@ -13,6 +13,7 @@ namespace Hydra;
 
 // Apply registered routes.
 $hooks['request.route'][1000][] = function (Request $request) {
+    $request->app->routes;
     
     // No user routes defined? Show an information page.
     if (!$request->app->routes__defined) {

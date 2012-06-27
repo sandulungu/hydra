@@ -11,9 +11,9 @@
 
 namespace Hydra\MimeType;
 
-use Symfony\Component\HttpFoundation\File\Mimetype\MimeTypeGuesser as SymfonyGuesser;
-use Symfony\Component\HttpFoundation\File\Mimetype\FileBinaryMimeTypeGuesser;
-use Symfony\Component\HttpFoundation\File\Mimetype\FileinfoMimeTypeGuesser;
+use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser as SymfonyGuesser;
+use Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser;
+use Symfony\Component\HttpFoundation\File\MimeType\FileinfoMimeTypeGuesser;
 
 class MimeTypeGuesser extends SymfonyGuesser {
     

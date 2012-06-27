@@ -296,7 +296,7 @@ class App extends Container {
         }
         return false;
     }
-    
+
     /**
      * Pluggable caching engine.
      * 
