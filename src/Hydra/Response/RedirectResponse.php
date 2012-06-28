@@ -30,5 +30,14 @@ class RedirectResponse extends Response {
         }
         $this->headers['Location'] = $uri;
     }
+    
+    static function createAndSend(HttpRequest $request, $uri = '', $exit = true) {
+        $response = new RedirectResponse($request, $uri);
+        $response->output();
+        if ($exit) {
+            exit;
+        }
+        return $response;
+    }
 
 }

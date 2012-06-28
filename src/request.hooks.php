@@ -60,7 +60,7 @@ $hooks['request.dispatch'][0][] = function (Request $request, &$response) {
         $response = new Response($request, $response);
     }
     
-    elseif (is_array($response)) {
+    elseif (isset($response) && !$response instanceof Response) {
         $response = new Response\DataResponse($request, $response);
     }
 };

@@ -34,13 +34,13 @@ class Curl {
 
     const DATA_TYPE_RAW = false;
     const DATA_TYPE_JSON = 'application/json';
-    const DATA_TYPE_URLENCODED = 'application/x-www-form-urlencoded';
+    const DATA_TYPE_FORMDATA = 'multipart/form-data';
 
     /**
      * @var handler
      */
     private $__handle;
-    public $httpHeaders = array();
+    public $headers = array();
 
     /**
      * @see curl_version()
@@ -171,20 +171,32 @@ class Curl {
      * @param mixed $charset
      * @return string Response
      */
-    function post($data, $data_type = self::DATA_TYPE_JSON, $charset = 'utf-8') {
-        $this->setOpt(CURLOPT_POST, true);
-
-        if ($data_type == self::DATA_TYPE_JSON) {
+    function post($data = null, $as_json = false) {
+        if ($as_json) {
             $data = json_encode($data);
-        } elseif ($data_type == self::DATA_TYPE_URLENCODED && !is_string($data)) {
-            $data = http_build_query($data);
+            $this->headers["Content-Type"] = "application/json;charset=utf-8";
         }
         $this->setOpt(CURLOPT_POSTFIELDS, $data);
+        $this->setOpt(CURLOPT_POST, true);
+        return $this->exec();
+    }
 
-        if ($data_type && !isset($this->httpHeaders["Content-Type"])) {
-            $this->httpHeaders["Content-Type"] = "$data_type;charset=$charset";
+    /**
+     * Performs a PUT request.
+     * 
+     * @param mixed $data Data to PUT
+     * @param string $data_type What content type to use for the data. 
+     *   A few special content types will also auto-encode data.
+     * @param mixed $charset
+     * @return string Response
+     */
+    function put($data = null, $as_json = false) {
+        if ($as_json) {
+            $data = json_encode($data);
+            $this->headers["Content-Type"] = "application/json;charset=utf-8";
         }
-
+        $this->setOpt(CURLOPT_POSTFIELDS, $data);
+        $this->setOpt(CURLOPT_CUSTOMREQUEST, "PUT");
         return $this->exec();
     }
 
@@ -203,7 +215,7 @@ class Curl {
         }
 
         $headers = array();
-        foreach ($this->httpHeaders as $name => $value) {
+        foreach ($this->headers as $name => $value) {
             if ($value) {
                 if (is_array($value)) {
                     foreach ($value as $v) {

@@ -16,6 +16,8 @@ namespace Hydra\Dump;
  */
 class Html {
     
+    static $_objects = array();
+    
     static function dump($data, $indent = 0) {
         $em = $strong = false;
         $numeric = true;
@@ -23,14 +25,19 @@ class Html {
         
         if (is_object($data)) {
             if ($data instanceof \Closure) {
-                $data = 'CALLBACK';
+                $data = 'Closure';
+                $em = true;
+            }
+            elseif (in_array($data, self::$_objects)) {
+                $data = 'Object recursion';
                 $em = true;
             }
             elseif (!method_exists($data, '__toString')) {
+                self::$_objects[] = $data;
                 $data = get_object_vars($data);
                 $numeric = false;
                 if (!$data) {
-                    $data = 'OBJECT';
+                    $data = 'Object';
                     $em = true;
                 }
             }
@@ -49,7 +56,8 @@ class Html {
                 $data = "<li>$data</li>";
             }
             if (!$data) {
-                $data = "<em>EMPTY</em>";
+                $data = "Empty array";
+                $em = true;
             } else {
                 $data = $numeric ? "\n$prefix<ol>$data</ol>\n" : "\n$prefix<ul>$data</ul>\n";
             }
@@ -86,6 +94,7 @@ class Html {
             $data = "<strong>$data</strong>";
         }
         if ($indent == 0) {
+            self::$_objects = array();
             $data = "<div class='dump'>$data</div>";
         }
         return (string)$data;

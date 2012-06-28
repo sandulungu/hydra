@@ -23,7 +23,7 @@ class DataResponse extends RenderedResponse {
     
     var $data;
 
-    function __construct(Request $request, $data = array(), $title = 'Data dump') {
+    function __construct(Request $request, $data = array(), $title = null) {
         parent::__construct($request, $title);
         $this->data = $data;
     }
