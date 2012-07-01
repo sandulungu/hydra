@@ -59,8 +59,9 @@ class Action {
         list($default_format) = explode('|', $requirements['format']);
         $params += $defaults + array('format' => $default_format);
         
-        $name = $pattern ?: 'homepage';
-        $name = preg_replace('/[^a-z0-9]+/', '_', strtolower($name)) .'.'. strtolower($requirements['method']);
+        $name = strtolower($pattern ?: 'homepage');
+        $name = preg_replace('/:[a-z0-9_]+/', '', $name);
+        $name = preg_replace('/[^a-z0-9$]+/', '_', str_replace('%', '$', $name)) .'.'. strtolower($requirements['method']);
         return new static($callback, $params, $name, $pattern);
     }
     

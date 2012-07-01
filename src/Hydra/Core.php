@@ -41,7 +41,7 @@ class Core {
             'register_error_handler' => true,
             'app_config_file' => '../app/config.php',
             
-            'app_hooks_dir' => '../app/hooks',
+            'app_hooks_dir' => '../app/src',
             'app_plugins_dir' => '../app/plugins',
             'app_src_dir' => '../app/src',
             'app_views_dir' => '../app/views',

@@ -31,7 +31,7 @@ $hooks['app.routes'][0][] = function (App $app) {
 };
     
 // @route annotation parser.
-$methods['annotation.route'][] = function(AnnotationsReader $reader, $annotation) {
+$methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotation) {
     static $prefixes;
     if ($annotation['type'] != 'method') {
         $prefixes[$annotation['class']] = $annotation['value'];

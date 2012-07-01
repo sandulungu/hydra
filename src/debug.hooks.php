@@ -38,6 +38,10 @@ $hooks['app.routes'][0][] = function(App $app) {
             array('hydra/debug/phpinfo', function(Request $request) {
                 return function() { phpinfo(); };
             }),
+            array('hydra/debug/batch', function(Request $request) {
+                $request->app->session['batch']['test'] = array(1, 2, 3, 4);
+                return new \Hydra\Response\RedirectResponse($request, 'hydra/batch/test');
+            }),
         );
     }
 };
@@ -47,5 +51,38 @@ $hooks['response.output'][1000][] = function (&$config, &$dummy, App $app) use (
     if ($app->core->debug) {
         $app->monolog__debug->info("Generation time: " . (microtime(true) - $start));
         $app->monolog__debug->info("Total time: " . (microtime(true) - $_SERVER['REQUEST_TIME']));
+    }
+};
+
+// Test batch operation
+$methods['request.batch.test.info'][0] = function() {
+    return array('redirect_uri' => '');
+};
+$methods['request.batch.test.prepare'][0] = function(\Hydra\Request $request, $data) {
+    $request->app->session["batch.test.progress"] = 0;
+    return "Processing step $data of 3";
+};
+$methods['request.batch.test.process'][0] = function(\Hydra\Request $request, $data) {
+    if ($data == 1) {
+        // Output HTML
+        sleep(1);
+        echo "This is some HTML <b>visible</b> to the user.";
+    }
+    elseif ($data == 2) {
+        // Partial task.
+        sleep(0.5);
+        $p =& $request->app->session["batch.test.progress"];
+        $p++;
+        return $p < 10 ? false : true;
+    }
+    elseif ($data == 3) {
+        // Partial task with progress indicator.
+        $p =& $request->app->session["batch.test.progress"];
+        $p += 2;
+        return $p < 100 ? "$p%" : true;
+    } 
+    else {
+        // Error handling test.
+        throw new \RuntimeException('Some error thrown.');
     }
 };

@@ -60,6 +60,7 @@
                             <ul class="dropdown-menu">
                                 <li><a href="{{ baseurl }}/hydra/debug/config">Configuration</a></li>
                                 <li><a href="{{ baseurl }}/hydra/debug/routes">Routes</a></li>
+                                <li><a href="{{ baseurl }}/hydra/debug/batch">Test batch processing</a></li>
                                 <li class="divider"></li>
                                 <li><a href="{{ baseurl }}/hydra/debug/session">Session</a></li>
                                 <li><a href="{{ baseurl }}/hydra/debug/cookie">Cookies</a></li>
@@ -92,7 +93,7 @@
                     <h1>{{ title }}</h1>
                 {% endif %}
             {% endblock %}
-            {% block response_body body|default('No content defined')|raw %}
+            {% block response_body body|default('')|raw %}
             <footer>
                 {% block footer %}
                 <hr>

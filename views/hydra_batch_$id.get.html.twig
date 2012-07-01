@@ -1,0 +1,70 @@
+{% extends 'default.html.twig' %}
+{% block response_body %}
+{{ parent() }}
+<ul id="batch-log"></ul>
+{% endblock %}
+
+{% block scripts %}
+{{ parent() }}
+<script>
+    $(function() {
+        var inProgress = false, hasErrors = false;
+        var $log = $('#batch-log'), $progress = $('<span />'), $line = $log.parent();
+        
+        var log = function(text, dots) {
+            $line = $('<li />').html(text + ' ').appendTo($log);
+            if (dots) {
+                $progress = $('<span class="label" />').text('...').appendTo($line);
+            }
+        }
+        
+        var next = function() {
+            $.get('{{ response.request.baseurl }}/hydra/batch/{{ id }}.json', function(response) {
+                if (response.html) {
+                    $('<blockquote />').html(response.html).appendTo($line);
+                }
+                if (response.done) {
+                    if (inProgress) {
+                        if (response.error) {
+                            hasErrors = true;
+                            $progress.html("error").addClass('label-important');
+                            if (response.error !== true) {
+                                $('<pre />').html(response.error).appendTo($line);
+                            }
+                        } else {
+                            $progress.html('ok').addClass('label-success');
+                        }
+                        inProgress = false;
+                        next();
+                    } else {
+                        if (response.error) {
+                            hasErrors = true;
+                            if (response.error !== true) {
+                                log('<pre>' + response.error + '</pre>');
+                            }
+                        }
+                        log(hasErrors ? 'Done with errors.' : 'All done successfully.');
+                        if (!hasErrors) {
+                            {% if redirect_uri is defined %}
+                            location.href = '{{ response.request.baseurl }}/{{ redirect_uri }}';
+                            {% elseif redirect_url is defined %}
+                            location.href = '{{ redirect_url }}';
+                            {% endif %}
+                        }
+                    }
+                } else {
+                    if (inProgress) {
+                        $progress.html(response.progress ? response.progress : $progress.html() + ' ... ');
+                        next();
+                    } else {
+                        log(response.text, true);
+                        inProgress = true;
+                        next();
+                    }
+                }
+            });
+        };
+        next();
+    });
+</script>
+{% endblock %}

@@ -65,19 +65,10 @@ $hooks['app.config'][2000][] = function (&$config, &$dummy, App $app) use (&$ser
         $prev_handler = set_exception_handler(function(\Exception $ex) use (&$prev_handler, $app) {
             try {
                 $app->monolog__main->addError($ex);
-                if ($prev_handler) {
-                    call_user_func($prev_handler, $ex);
-                }
             }
-            
-            // Something really bad happened and must be reported back to user even in production
-            // as it can be triggered by a non-working logger.
-            catch (\Exception $innerEx) {
-                if ($prev_handler) {
-                    call_user_func($prev_handler, $innerEx);
-                } else {
-                    echo "<pre>$innerEx</pre>";
-                }
+            catch (\Exception $innerEx) {}
+            if ($prev_handler) {
+                call_user_func($prev_handler, $ex);
             }
         });
     }
@@ -119,3 +110,13 @@ $hooks['app.config'][2000][] = function (&$config, &$dummy, App $app) use (&$ser
         };
     }
 };
+
+// TODO: Improve exception handling for non-HTML content and add hooks
+$methods['app.monolog.logException'][0] = function(App $app, \Exception $ex) {
+    if ($app->config['monolog.logExceptions']) {
+        try {
+            $app->monolog__main->addError($ex);
+        } catch (\Exception $innerEx) {}
+    }
+};
+

@@ -201,6 +201,20 @@ class Curl {
     }
 
     /**
+     * Performs a DELETE request.
+     * 
+     * @param mixed $data Data to PUT
+     * @param string $data_type What content type to use for the data. 
+     *   A few special content types will also auto-encode data.
+     * @param mixed $charset
+     * @return string Response
+     */
+    function delete() {
+        $this->setOpt(CURLOPT_CUSTOMREQUEST, "DELETE");
+        return $this->exec();
+    }
+
+    /**
      * Performs the request(s). By default it will be a GET request.
      * @see curl_exec()
      *
@@ -237,7 +251,11 @@ class Curl {
         }
 
         if ($useException && (false === $result)) {
-            throw new \RuntimeException("{$this->error()} after {$attempts} attempt(s). " . var_export($this->getInfo(0), true), $this->errno());
+            throw new \RuntimeException(
+                ($attempts > 1 ? "{$this->error()} after {$attempts} attempt(s)." : $this->error()) 
+                .' '. 
+                var_export($this->getInfo(0), true)
+            , $this->errno());
         }
 
         return $result;
