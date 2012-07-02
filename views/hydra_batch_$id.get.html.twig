@@ -23,14 +23,12 @@
                 if (response.html) {
                     $('<blockquote />').html(response.html).appendTo($line);
                 }
-                if (response.done) {
+                if (response.done || response.error) {
                     if (inProgress) {
                         if (response.error) {
                             hasErrors = true;
                             $progress.html("error").addClass('label-important');
-                            if (response.error !== true) {
-                                $('<pre />').html(response.error).appendTo($line);
-                            }
+                            $('<pre />').html(response.error.message).appendTo($line);
                         } else {
                             $progress.html('ok').addClass('label-success');
                         }
@@ -39,9 +37,7 @@
                     } else {
                         if (response.error) {
                             hasErrors = true;
-                            if (response.error !== true) {
-                                log('<pre>' + response.error + '</pre>');
-                            }
+                            log('<pre>' + response.error.message + '</pre>');
                         }
                         log(hasErrors ? 'Done with errors.' : 'All done successfully.');
                         if (!hasErrors) {

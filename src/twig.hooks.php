@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -14,12 +15,13 @@ namespace Hydra;
 // Set default configuration options.
 $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
     $config['twig.options'] = array(
-        'cache' => "{$app->core->cache_dir}/twig",
+        'cache' => "{$app->core->data_dir}/cache/twig",
         'debug' => $app->core->debug,
     );
     $config['twig.dirs'] = array();
-    if (is_dir($app->core->app_views_dir)) {
-        $config['twig.dirs'][] = $app->core->app_views_dir;
+    $app_views_dir = "{$app->core->app_dir}/views";
+    if (is_dir($app_views_dir)) {
+        $config['twig.dirs'][] = $app_views_dir;
     }
 };
 

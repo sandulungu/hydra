@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -29,7 +30,7 @@ class HttpRequest extends Request {
     var $server;
     
     function __construct(App $app, $path, $method = 'GET', array $query = array(), $data = null, array $server = array()) {
-        $this->server = $server;
+        $this->server = $server ? $server : $_SERVER;
         parent::__construct($app, $path, $method, $query, $data);
     }
     

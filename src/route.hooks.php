@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -51,7 +52,7 @@ $methods['app.normalize.vendor_web_dir'][0] = function(App $app, $name) {
 };
 
 $methods['app.normalize.plugin_web_dir'][0] = function(App $app, $name) {
-    $dir = "{$app->core->app_plugins_dir}/$name/web";
+    $dir = "{$app->core->app_dir}/plugins/$name/web";
     return is_dir($dir) ? $dir : null;
 };
 

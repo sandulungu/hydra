@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -29,7 +30,6 @@ class FileResponse extends Response {
             throw new \Hydra\Exception\NotFoundHttpException("File not found: $filename");
         }
         
-        parent::__construct($request);
         $this->filename = $filename;
         $phpfile = preg_match('/\.php$/', $filename);
         
@@ -41,7 +41,7 @@ class FileResponse extends Response {
             if (!$phpfile) {
                 $this->headers['Content-Type'] = $request->app->mimetype__guesser->guess($filename);
             } 
-            elseif ($this->app->config->response['guess_php_contentType']) {
+            elseif ($request->app->config->response['guess_php_contentType']) {
                 $this->headers['Content-Type'] = $request->app->mimetype__extensionGuesser->guess(substr($filename, 0, -4));
             }
         }
@@ -50,7 +50,7 @@ class FileResponse extends Response {
             $this->headers['Content-Length'] = filesize($filename);
         }
 
-        $this->content = function() use ($filename, $phpfile, $request) {
+        parent::__construct($request, function() use ($filename, $phpfile, $request) {
             
             // We don't want any left-over output when sending a file.
             ob_end_clean();
@@ -68,7 +68,7 @@ class FileResponse extends Response {
                     readfile($filename);
                 }
             }
-        };
+        });
     }
     
 }

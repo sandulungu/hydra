@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -35,13 +36,12 @@ class Response {
     function __construct(Request $request, $content = null) {
         $this->app = $request->app;
         $this->request = $request;
-        $request->response = $this;
         $this->headers =& self::$_headers;
         
         // Set Content-Type header
         // Note: MimeTypeGuesser is a heavy class, so don't load it unnecessary
         $this->format = $request->params['format'];
-        if ($request->isMain && $this->format != 'html' && empty($this->headers['Location'])) {
+        if ($request->isMain && $this->format != 'html' && empty($this->headers['Location']) && empty($this->headers['Content-Type'])) {
             $this->headers['Content-Type'] = $request->app->mimetype__extensionGuesser->guess($this->format);
         }
                 
@@ -65,10 +65,13 @@ class Response {
      * @param bool $send True to send headers immediately, false to append to $this->headers.
      */
     function expires($ttl = 3600, $send = false) {
-        if ($ttl) {
+        session_cache_limiter('');
+        
+        if ($ttl > 0) {
             $headers['Expires'] = gmdate(DATE_RFC2822, time() + $ttl);
         } else {
-            // No cache
+            header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+            header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
         }
         
         if ($send) {
@@ -95,8 +98,8 @@ class Response {
         }
     }
     
-    function output() {
-        $this->app->hook('response.output_prepare', $this);
+    function send() {
+        $this->app->hook('response.before_send', $this);
         
         // Render before sending headers, as they may be changed in sub-actions.
         $this->render(false);
@@ -111,11 +114,11 @@ class Response {
         
         // Streaming support.
         if ($this->content instanceof \Closure) {
-            $this->app->hook('response.output', $this);
+            $this->app->hook('response.send', $this);
             $callback = $this->content;
             $callback($this);
         } else {
-            echo $this->app->hook('response.output', $this, $this->content);
+            echo $this->app->hook('response.send', $this, $this->content);
         }
         
         return $this;

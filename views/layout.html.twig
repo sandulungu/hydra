@@ -76,11 +76,13 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
                             <ul class="dropdown-menu">
+                                {% block nav_help %}
                                 <li><a href="https://github.com/z7/hydra">Hydra homepage</a></li>
                                 <li><a href="http://twig.sensiolabs.org">Twig homepage</a></li>
                                 <li><a href="http://twitter.github.com/bootstrap">Twitter Bootstrap homepage</a></li>
                                 <li class="divider"></li>
                                 <li><a href="{{ baseurl }}/hydra/about">About Hydra</a></li>
+                                {% endblock %}
                             </ul>
                         </li>
                     </ul>

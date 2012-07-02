@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -35,7 +36,7 @@ class Action {
         
         $preg = preg_replace_callback('/[%$]([a-z0-9_]+)(?::([a-z0-9_]+))?(\*)?/', function($matches) use ($requirements, &$types) {
             $name = $matches[1];
-            $types[$name] = empty($matches[2]) ? 'string' : $matches[2];
+            $types[$name] = empty($matches[2]) ? 'safe_string' : $matches[2];
             $chars = empty($matches[3]) ? '[^/]' : '.';
             return empty($requirements[$name]) ? "(?P<$name>$chars+?)" : "(?P<$name>{$requirements[$name]})";
         }, strtr(trim($pattern, '/'), array('.', '\.')));

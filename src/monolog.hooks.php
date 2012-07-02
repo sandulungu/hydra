@@ -8,6 +8,7 @@
  * 
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -19,7 +20,7 @@ namespace Hydra;
 
 // Set default configuration options.
 $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
-    $config['monolog.mainLogFile'] = $app->core->logs_dir . '/main.log';
+    $config['monolog.mainLogFile'] = "{$app->core->data_dir}/logs/main.log";
     $config['monolog.logExceptions'] = true;
     
     $config['monolog.loggers'] = array(
@@ -49,41 +50,34 @@ $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
         $config['monolog.handlers']['main'] =& $config['monolog.handlers']['main.stream'];
     } else {
         $config['monolog.handlers']['main'] = array(
-            'fingerscrossed', 
-            function() use ($app) {
-                return $app['monolog.handlers.main.stream'];
-            },
+            'FingersCrossed', 
+            'monolog.handlers.main.stream',
         );
     }
 };
 
 // Register logger services.
-$hooks['app.config'][2000][] = function (&$config, &$dummy, App $app) use (&$services) {
-    
-    if ($config['monolog.logExceptions']) {
-        $prev_handler = null;
-        $prev_handler = set_exception_handler(function(\Exception $ex) use (&$prev_handler, $app) {
-            try {
-                $app->monolog__main->addError($ex);
-            }
-            catch (\Exception $innerEx) {}
-            if ($prev_handler) {
-                call_user_func($prev_handler, $ex);
-            }
-        });
-    }
-    
-    foreach ($config['monolog.handlers'] as $name => $params) {
+$hooks['app.init'][0][] = function (App $app) use (&$services) {
+
+    foreach ($app->config['monolog.handlers'] as $name => $params) {
         $services["app.monolog.handlers.$name"][] = function() use ($name, $params, $app) {
             $class = array_shift($params);
             if (strpos($class, '\\') === false) {
+                
+                // Lazy load inner processor
+                if ($class == 'FingersCrossed') {
+                    $params[0] = function() use ($app, $params) {
+                        return $app[$params[0]];
+                    };
+                }
+                
                 $class = "Monolog\Handler\\{$class}Handler";
             }
             return Utils::createClassInstance($class, $params);
         };
     }
     
-    foreach ($config['monolog.processors'] as $name => $params) {
+    foreach ($app->config['monolog.processors'] as $name => $params) {
         $services["app.monolog.processors.$name"][] = function() use ($name, $params, $app) {
             $class = array_shift($params);
             if (strpos($class, '\\') === false) {
@@ -93,7 +87,7 @@ $hooks['app.config'][2000][] = function (&$config, &$dummy, App $app) use (&$ser
         };
     }
     
-    foreach ($config['monolog.loggers'] as $name => $log_config) {
+    foreach ($app->config['monolog.loggers'] as $name => $log_config) {
         $services["app.monolog.$name"][] = function() use ($name, $log_config, $app) {
             $log_config += array(
                 'handlers' => array(),
@@ -111,12 +105,8 @@ $hooks['app.config'][2000][] = function (&$config, &$dummy, App $app) use (&$ser
     }
 };
 
-// TODO: Improve exception handling for non-HTML content and add hooks
-$methods['app.monolog.logException'][0] = function(App $app, \Exception $ex) {
+$hooks['app.exception'][0][] = function(\Exception $ex, $dummy, App $app) {
     if ($app->config['monolog.logExceptions']) {
-        try {
-            $app->monolog__main->addError($ex);
-        } catch (\Exception $innerEx) {}
+        $app->monolog__main->addError($ex);
     }
 };
-

@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -14,20 +15,13 @@ namespace Hydra;
 /**
  * Core configuration class.
  * 
- * @property bool $debug 
+ * @property bool $debug
  * @property string $register_exception_handler
  * @property string $register_error_handler
- * @property string $app_config_file
- * 
- * @property string $app_hooks_dir
- * @property string $app_plugins_dir
- * @property string $app_src_dir
- * @property string $app_views_dir
- * @property string $core_config_file
+ * @property string $app_dir
  * @property string $core_dir
- * @property string $cache_dir
  * @property string $data_dir
- * @property string $logs_dir
+ * @property ExceptionHandler $exception_handler
  */
 class Core {
     
@@ -39,28 +33,22 @@ class Core {
             'debug' => false,
             'register_exception_handler' => true,
             'register_error_handler' => true,
-            'app_config_file' => '../app/config.php',
-            
-            'app_hooks_dir' => '../app/src',
-            'app_plugins_dir' => '../app/plugins',
-            'app_src_dir' => '../app/src',
-            'app_views_dir' => '../app/views',
             'core_dir' => __DIR__ . '/../..',
-            'cache_dir' => '../data/cache',
             'data_dir' => '../data',
-            'logs_dir' => '../data/logs',
+            'app_dir' => '../app',
         );
         
+        $this->exception_handler = new ExceptionHandler($this->debug);
         if ($this->register_exception_handler) {
-            \Symfony\Component\HttpKernel\Debug\ExceptionHandler::register($this->debug);
+            set_exception_handler(array($this->exception_handler, 'handle'));
         }
         if ($this->register_error_handler) {
             \Symfony\Component\HttpKernel\Debug\ErrorHandler::register();
         }
         
-        foreach (array('data_dir', 'cache_dir', 'logs_dir') as $name) {
-            if (!is_dir($config[$name])) {
-                mkdir($config[$name]);
+        foreach (array($config['data_dir'], "{$config['data_dir']}/cache", "{$config['data_dir']}/logs") as $dir) {
+            if (!is_dir($dir)) {
+                mkdir($dir);
             }
         }
     }

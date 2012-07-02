@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -47,7 +48,7 @@ $hooks['app.routes'][0][] = function(App $app) {
 };
 
 // Set default configuration options.
-$hooks['response.output'][1000][] = function (&$config, &$dummy, App $app) use ($start) {
+$hooks['response.send'][1000][] = function (&$config, &$dummy, App $app) use ($start) {
     if ($app->core->debug) {
         $app->monolog__debug->info("Generation time: " . (microtime(true) - $start));
         $app->monolog__debug->info("Total time: " . (microtime(true) - $_SERVER['REQUEST_TIME']));
@@ -60,17 +61,17 @@ $methods['request.batch.test.info'][0] = function() {
 };
 $methods['request.batch.test.prepare'][0] = function(\Hydra\Request $request, $data) {
     $request->app->session["batch.test.progress"] = 0;
-    return "Processing step $data of 3";
+    return "Processing step $data of 4";
 };
 $methods['request.batch.test.process'][0] = function(\Hydra\Request $request, $data) {
     if ($data == 1) {
         // Output HTML
-        sleep(1);
+        usleep(1500000);
         echo "This is some HTML <b>visible</b> to the user.";
     }
     elseif ($data == 2) {
         // Partial task.
-        sleep(0.5);
+        usleep(200000);
         $p =& $request->app->session["batch.test.progress"];
         $p++;
         return $p < 10 ? false : true;

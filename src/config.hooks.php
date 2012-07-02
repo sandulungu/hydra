@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -28,25 +29,21 @@ $hooks['app.config'][-1000][] = function (&$config) {
     $config['cookie']['secure'] = null;
     $config['cookie']['httponly'] = null;
     
-    // Do not override these if you don't know exactly what you're doing.
-    $config['security']['token.cookie'] = 'hydra.token';
-    $config['security']['token.autocheck'] = true;
-    $config['security']['token.param'] = 'token';
-    $config['security']['headers'] = array(
-        'X-Frame-Options' => 'SAMEORIGIN',
-        'X-Content-Type-Options' => 'nosniff',
-        'X-XSS-Protection' => '1;mode=block',
-    ); 
-    
     $config['assets.js'] = array();
     $config['assets.css'] = array();
     
     $config['app']['title'] = 'Hydra';
+    
+    $config['security']['token.cookie'] = 'hydra.token';
+    $config['security']['token.autocheck'] = true;
+    $config['security']['token.param'] = 'token';
+    $config['security']['headers'] = array();
 };
 
 // Load app configuration options from config file.
 $hooks['app.config'][0][] = function (&$config, &$dummy, App $app) {
-    if (file_exists($app->core->app_config_file)) {
-        require $app->core->app_config_file;
+    $app_config_file = "{$app->core->app_dir}/config.php";
+    if (file_exists($app_config_file)) {
+        require $app_config_file;
     }
 };

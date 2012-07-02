@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -33,8 +34,9 @@ class DataResponse extends RenderedResponse {
             $method = "dump__$this->format";
             $this->variables['body'] = $this->app->$method($this->data);
 //            $this->variables['body'] = $this->app["method:dump.$this->format"]($this->data);
-            parent::render();
+            return parent::render();
         }
+        return $this->content;
     }
     
 }

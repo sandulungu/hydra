@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -95,6 +96,7 @@ class App extends Container {
         }
         $this->autoloader = $autoloader;
         $this->core = new Core($core_config);
+        $this->core->exception_handler->app = $this;
         parent::__construct('app');
         $this->_init();
     }
@@ -109,12 +111,12 @@ class App extends Container {
      * Some core functions, like hook(), cannot be extended this way because of performance considerations.
      */
     protected function _init() {
-        $this->autoloader->add('App\\', $this->core->app_src_dir);
+        $this->autoloader->add('App\\', "{$this->core->app_dir}/src");
         
         $core = $this->core;
         $this->_hookFiles = $this->fallback__cache('core.hook_files', function() use ($core) {
             $files = array();
-            foreach (Utils::listFilesRecursive(array(__DIR__ . '/..', $core->app_plugins_dir, $core->app_hooks_dir)) as $file) {
+            foreach (Utils::listFilesRecursive(array(__DIR__ . '/..', "$core->app_dir/plugins", "$core->app_dir/src")) as $file) {
                 if ($file->isFile()) {
                     $filename = (string)$file;
                     if (preg_match('/\.hooks.php$/', $filename)) {
@@ -137,8 +139,8 @@ class App extends Container {
             require $file;
         }
         
-        // Load app configuration
-        $this->config;
+        // Configure dynamic services
+        $this->hook('app.init', $app);
     }
     
     /**
@@ -154,7 +156,7 @@ class App extends Container {
      * @return Response
      */
     public function dispatch($path, $method = 'GET', $query = array(), $data = null) {
-        $request = new Request\HttpRequest($this, $path, $method, $query, $data, $_SERVER);
+        $request = new Request\HttpRequest($this, $path, $method, $query, $data);
         $this->requests[] = $request;
         $response = $request->dispatch();
         return $response;
@@ -164,9 +166,7 @@ class App extends Container {
      * Save/load data from/to file.
      */
     public function persist($filename, $value = null, $reset = false) {
-        if (strpos($filename, '%data_dir/') === 0) {
-            $filename = $this->core->data_dir . substr($filename, 9);
-        }
+        $filename = "{$this->core->data_dir}/$filename";
         if ($reset) {
             if (!isset($value)) {
                 unlink($filename);
@@ -291,7 +291,7 @@ class App extends Container {
         
         $response = $this->dispatch($path, $_SERVER['REQUEST_METHOD'], $_GET, $data);
         if ($response) {
-            $response->output();
+            $response->send();
             return true;
         }
         return false;
@@ -307,7 +307,7 @@ class App extends Container {
      * @return mixed
      */
     protected function fallback__cache($name, $value = null, $ttl = 0, $reset = null) {
-        $filename = "{$this->core->cache_dir}/$name";
+        $filename = "cache/$name";
         if ($reset === null && $this->core->debug) {
             $reset = true;
         }
@@ -324,7 +324,7 @@ class App extends Container {
      */
     protected function fallback__config__persist($name = null, $value = null, $reset = false) {
         static $values;
-        $filename = "{$this->core->data_dir}/config";
+        $filename = "config";
         
         if (!isset($values)) {
             $values = (array)$this->persist($filename);

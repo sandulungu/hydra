@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -33,7 +34,7 @@ class RedirectResponse extends Response {
     
     static function createAndSend(HttpRequest $request, $uri = '', $exit = true) {
         $response = new RedirectResponse($request, $uri);
-        $response->output();
+        $response->send();
         if ($exit) {
             exit;
         }

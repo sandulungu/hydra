@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -39,41 +40,35 @@ $hooks['app.routes'][0][] = function(App $app) {
                     $request->app->session['batch.status'][$id] = 'process';
                     
                     $method = "batch__{$id}__prepare";
-                    $text = false;
-                    $error = null;
-                    try {
-                        $text = $request->$method($data);
-                    } catch(\Exception $ex) {
-                        $error = $request->app->core->debug ? "$ex" : true;
-                        $request->app->monolog__logException($ex);
-                    }
+                    $text = $request->$method($data);
                     return array(
                         'done' => $text === false, 
                         'text' => is_string($text) && $text ? $text : 'Processing',
-                        'error' => $error,
                     );
                     
                 } else {
                     $method = "batch__{$id}__process";
                     ob_start();
-                    $error = $progress = null;
+                    
+                    $ex = null;
                     try {
                         $progress = $request->$method($data);
-                    } catch(\Exception $ex) {
-                        $error = $request->app->core->debug ? "$ex" : true;
-                        $request->app->monolog__logException($ex);
-                    }
-                    $html = ob_get_clean();
-                    $done = $progress === true || $progress === null;
-                    if ($done) {
+                        $done = $progress === true || $progress === null;
+                    } 
+                    catch (\Exception $ex) {}
+                    if ($ex || $done) {
                         array_shift($batch);
                         $request->app->session['batch.status'][$id] = 'prepare';
                     }
+                    if ($ex) {
+                        throw $ex;
+                    }
+                    
+                    $html = ob_get_clean();
                     return array(
                         'done' => $done,
                         'progress' => $done ? null : $progress,
                         'html' => $html,
-                        'error' => $error,
                     );
                 }
             }

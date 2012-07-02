@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -24,7 +25,12 @@ class Request extends Container {
      */
     var $app;
     
-    var $query, $data, $method, $path, $response, $isMain = false;
+    /**
+     * @var Response 
+     */
+    var $response;
+    
+    var $query, $data, $method, $path, $isMain = false;
 
     function __construct(App $app, $path, $method = 'GET', array $query = array(), $data = null) {
         $this->app = $app;
@@ -36,8 +42,11 @@ class Request extends Container {
         parent::__construct('request');
     }
     
+    /**
+     * @return Response
+     */
     function dispatch() {
-        return $this->app->hook('request.dispatch', $this);
+        return $this->app->hook('request.dispatch', $this, $this->response);
     }
 
     /**

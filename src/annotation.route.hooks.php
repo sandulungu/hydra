@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -15,12 +16,13 @@ namespace Hydra;
 $hooks['app.routes'][0][] = function (App $app) {
     $routes = $app->cache('annotation.routes', function() use ($app) {
         $routes = array();
-        foreach (Utils::listFilesRecursive($app->core->app_src_dir) as $file) {
+        $app_src_dir = "{$app->core->app_dir}/src";
+        foreach (Utils::listFilesRecursive($app_src_dir) as $file) {
             if (!preg_match('/Controller\.php$/', $file)) {
                 continue;
             }
             
-            $classname = str_replace('/', '\\', substr($file, strlen($app->core->app_src_dir), -4));
+            $classname = str_replace('/', '\\', substr($file, strlen($app_src_dir), -4));
             $routes = array_merge($routes, $app->annotationsReader->forClass($classname, array('route')));
         }
         return $routes;

@@ -2,6 +2,7 @@
 /**
  * This file is part of Hydra, the cozy RESTfull PHP5.3 micro-framework.
  *
+ * @link        https://github.com/z7/hydra
  * @author      Sandu Lungu <sandu@lungu.info>
  * @package     hydra
  * @subpackage  core
@@ -12,6 +13,16 @@
 namespace Hydra;
 
 class Utils {
+    
+    static function fileExt($filename, $allow_empty_name = false) {
+        $filename = str_replace('\\', '/', $filename);
+        $ds_pos = strpos($filename, '/');
+        $dot_pos = strrpos($filename, '.');
+        if ($dot_pos === false && $allow_empty_name && $ds_pos === false) {
+            return $filename;
+        }
+        return $dot_pos !== false && $dot_pos > $ds_pos ? substr($filename, $dot_pos + 1) : null;
+    }
     
     /**
      * Formats a string as a slug
