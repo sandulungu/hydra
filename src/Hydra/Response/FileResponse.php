@@ -23,22 +23,22 @@ use Hydra\Utils;
  */
 class FileResponse extends Response {
     
-    var $filename;
+    var $filename, $isPhp;
 
     function __construct(Request $request, $filename, $force_download = false) {
         if (!is_file($filename) || !is_readable($filename)) {
             throw new \Hydra\Exception\NotFoundHttpException("File not found: $filename");
         }
         
+        $this->isPhp = preg_match('/\.php$/', $filename);
         $this->filename = $filename;
-        $phpfile = preg_match('/\.php$/', $filename);
         
         if ($force_download) {
             $this->headers['Content-Type'] = 'application/octet-stream';
         } else {
 
             // Try to guess Content-Type
-            if (!$phpfile) {
+            if (!$this->isPhp) {
                 $this->headers['Content-Type'] = $request->app->mimetype__guesser->guess($filename);
             } 
             elseif ($request->app->config->response['guess_php_contentType']) {
@@ -46,26 +46,27 @@ class FileResponse extends Response {
             }
         }
         
-        if (!$phpfile) {
+        if (!$this->isPhp) {
             $this->headers['Content-Length'] = filesize($filename);
         }
 
-        parent::__construct($request, function() use ($filename, $phpfile, $request) {
+        $response = $this;
+        parent::__construct($request, function() use ($response) {
             
             // We don't want any left-over output when sending a file.
             ob_end_clean();
  
-            if ($phpfile) {
-                $response = $request->response;
-                $app = $request->app;
-                require $filename;
+            if ($response->isPhp) {
+                $request = $response->request;
+                $app = $response->app;
+                require $response->filename;
             } else {
-                if ($request->app->config->response['x_sendfile']) {
-                    $filename = realpath($filename);
+                if ($response->app->config->response['x_sendfile']) {
+                    $filename = realpath($response->filename);
                     header("X-Sendfile: $filename");
                 } else {
                     set_time_limit(0); //Set the execution time to infinite.
-                    readfile($filename);
+                    readfile($response->filename);
                 }
             }
         });

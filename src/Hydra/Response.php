@@ -50,11 +50,12 @@ class Response {
     
     function render($render_stream = true) {
         if ($render_stream && $this->content instanceof \Closure) {
+            $this->app->hook('response.stream', $this);
             ob_start();
-            $this->content($this);
+            $callback = $this->content;
+            $callback($this);
             $this->content = ob_get_clean();
         }
-        $this->app->hook('response.after_render', $this);
         return $this->content;
     }
     
@@ -114,6 +115,7 @@ class Response {
         
         // Streaming support.
         if ($this->content instanceof \Closure) {
+            $this->app->hook('response.stream', $this);
             $this->app->hook('response.send', $this);
             $callback = $this->content;
             $callback($this);

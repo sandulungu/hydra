@@ -52,7 +52,6 @@ class Action {
             }
             $method = "normalize__{$types[$name]}";
             $params[$name] = $types[$name] ? $request->app->$method($match) : $match;
-//            $params[$name] = $types[$name] ? $request->app["method:normalize.{$types[$name]}"]($match) : $match;
             if ($params[$name] === null) {
                 throw new Exception\InvalidActionParamException("Route matched, but invalid value for '$name' param detected: $match.");
             }

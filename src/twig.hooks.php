@@ -31,7 +31,7 @@ $hooks['app.config'][1000][] = function (&$config) {
 };
 
 // Render template.
-$hooks['response.render'][0][] = function ($response) {
+$hooks['response.render'][0][] = function (Response\RenderedResponse $response) {
     if (preg_match('/\.twig$/', $response->view)) {
         return $response->app->twig->render($response->view, $response->variables);
     }

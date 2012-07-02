@@ -50,8 +50,7 @@ class RenderedResponse extends Response {
             } else {
                 $this->content = $this->variables['body'];
             }
-            return parent::render($render_stream);
         }
-        return $this->content;
+        return parent::render($render_stream);
     }
 }

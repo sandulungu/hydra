@@ -3,6 +3,8 @@ Hydra
 
 The cozy RESTfull PHP5.3 micro-framework.
 
+An application template is available at https://github.com/z7/hydra_app
+
 
 Why yet another framework?
 --------------------------
@@ -29,17 +31,18 @@ A micro-framework with everything you'll usualy want in just 300kB (including ve
 
 What it has out of box:
 
-* __Service container__, inluding with the possibility to inject methods and extend them at runtime. No more problems with extending core classes.
+* __Strong security__: XSS, clickjacking, CRSF and code injection protection.
+* __RESTfull router__ with support for both, callback and __controller__ classes.
+* __Parameter normalization__ for safety and easy, multi-format __data dumping__ for super-quick web-service driven application prototyping.
+* __Service container__, including with the possibility to inject methods and extend them at runtime. No more problems with extending core classes.
 * __Hooking system__ with intuitive execution flow control (weighted hooks) and auto-scan of plugin hook files.
 * __MongoDB__ and __PDO__ support - I like these, so they've got from me a total of 40 lines of code and ease of usage through the service container :)
 * __Caching__ - to run even faster when in prod.
-* __RESTfull router__ with support for both, callback and __controller__ classes.
-* __Parameter normalization__ for safety and easy, multi-format __data dumping__ for super-quick web-service driven application prototyping.
 * Simple __Requests/Response__ workflow with ability to stream content; hooks at every step with flow control and intreruption abilities.
 * __Session__, __Cookies__ and __Persistent Configuration__ - just set a property/value in these array-access enabled services and it will be there on subsequent request. Magic!
-* __[Twig](http://twig.sensiolabs.org/) template engine__ because native PHP templates, well, suck and Fabien's solution rulezzz.
-* __[Monolog](https://github.com/Seldaek/monolog)__ + FirePHP/ChromePHP support and Symfony's __Exceptions handler__ with debug/production presets - for a nice time spending while debugging.
-* Extremely friendly with IDE. All services and dynamic methods support autocompletion.
+* [Twig](http://twig.sensiolabs.org/) __template engine__ because native PHP templates, well, suck and Fabien's solution rulezzz.
+* [Monolog](https://github.com/Seldaek/monolog) __logging__ + FirePHP/ChromePHP support and Symfony's __Exceptions handler__ with debug/production presets - for a nice time spending while debugging.
+* Extremely friendly with IDEs. All services and dynamic methods support autocompletion.
 * Distribution as standalone __phar__ or as a __Composer package__.
 * Clean UI created with [Twitter Bootstrap](http://twitter.github.com/bootstrap/).
 
@@ -58,5 +61,4 @@ Want more?
 ----------
 
 Hydra is right now in an early stage of development, so your feedback is VERY, VERY important.
-Share, discuss, post issues and feature requests, write review. The best for PHP has yet to come and .
-My email is __sandu(a)lungu.info__
+Share, discuss, post issues and feature requests, write review. The best has yet to come!
