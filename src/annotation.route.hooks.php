@@ -28,7 +28,6 @@ $hooks['app.routes'][0][] = function (App $app) {
         return $routes;
     });
     
-    $app->routes__defined = $app->routes__defined || $routes;
     return $routes;
 };
     
@@ -66,5 +65,5 @@ $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotatio
         $requirements['format'] = $format;
     }
     
-    return array($pattern, null, $requirements, $defaults);
+    return array($http_method, $pattern, null, $requirements, $defaults);
 };

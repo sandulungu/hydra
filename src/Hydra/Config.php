@@ -23,11 +23,11 @@ namespace Hydra;
  * @property array  $security
  * @property array  $response
  * @property array  $assets__js
- * @property array  $assets__csss
+ * @property array  $assets__css
+ * @property array  $app
  * 
  * @property array  $mongodb
  * @property array  $pdo
- * @property array  $routes
  * 
  * @property array  $twig__options
  * @property array  $twig__dirs

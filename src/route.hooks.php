@@ -17,13 +17,13 @@ $hooks['app.routes'][-1000][] = function () {
     return array(
         
         // Setup core routes: assets delivery.
-        array('vendor/%vendor:vendor_web_dir/%path*/', function($request, $vendor, $path) {
+        array('GET', 'vendor/%vendor:vendor_web_dir/%path*/', function($request, $vendor, $path) {
             if (substr($path, -4) == '.php') {
                 throw new Exception\InvalidActionParamException("'.php' extension should not be specified in a vendor asset filename.");
             }
             return new Response\FileResponse($request, file_exists("$vendor/$path.php") ? "$vendor/$path.php" : "$vendor/$path");
         }),
-        array('plugins/%plugin:plugin_web_dir/%path*/', function($request, $plugin, $path) {
+        array('GET', 'plugins/%plugin:plugin_web_dir/%path*/', function($request, $plugin, $path) {
             if (substr($path, -4) == '.php') {
                 throw new Exception\InvalidActionParamException("'.php' extension should not be specified in a plugin asset filename.");
             }
@@ -31,13 +31,14 @@ $hooks['app.routes'][-1000][] = function () {
         }),
                 
         // About page
-        array('hydra/about', function($request) {
+        array('GET', 'hydra/about', function($request) {
             return new Response\FancyResponse($request, array('title' => "About Hydra"));
         }),
 
     );
 };
 
+// Validator for vendor web folder
 $methods['app.normalize.vendor_web_dir'][0] = function(App $app, $name) {
     if ($name == 'hydra') {
         return "{$app->core->core_dir}/web";
@@ -51,34 +52,29 @@ $methods['app.normalize.vendor_web_dir'][0] = function(App $app, $name) {
     return $app->config['vendor.web_dirs'][$name];
 };
 
+// Validator for plugin web folder
 $methods['app.normalize.plugin_web_dir'][0] = function(App $app, $name) {
     $dir = "{$app->core->app_dir}/plugins/$name/web";
     return is_dir($dir) ? $dir : null;
 };
 
-// Application methods for quick route binding.
-$methods['app.route.get'][0] = function(App $app, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {
-    $app->routes__defined = true;
-    $app->routes[] = array($pattern, $callback, $requirements, $defaults);
+// Application method for quick route binding.
+$methods['app.route'][0] = function(App $app, $http_method, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {
+    if (!in_array($http_method, array('GET', 'POST', 'PUT', 'DELETE'))) {
+        throw new \DomainException("Http method should be one of: 'GET', 'POST', 'PUT', 'DELETE', but '$http_method' given in $name annotation.");
+    }
+    $app->routes[] = array($http_method, $pattern, $callback, $requirements, $defaults);
     return $app;
-};
-
-$methods['app.route.post'][0] = function(App $app, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {
-    $requirements['method'] = 'POST';
-    return $app->route__get($pattern, $callback, $requirements, $defaults);
-};
-
-$methods['app.route.put'][0] = function(App $app, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {
-    $requirements['method'] = 'PUT';
-    return $app->route__get($pattern, $callback, $requirements, $defaults);
-};
-
-$methods['app.route.delete'][0] = function(App $app, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {
-    $requirements['method'] = 'DELETE';
-    return $app->route__get($pattern, $callback, $requirements, $defaults);
 };
 
 // Gets a list of registered routes.
 $services['app.routes'][0] = function (App $app) {
-    return $app->infoHook('app.routes', $app);
+    $routes = $app->infoHook('app.routes', $app);
+
+    // No home route defined? Show an information page.
+    $routes[] = array('GET', '/', function() {
+        return 'Please define your routes in <strong>web/index.php</strong> or create a controller in <strong>app/src/App/Controller/</strong> folder.';
+    });
+    
+    return $routes;
 };

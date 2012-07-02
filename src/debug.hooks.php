@@ -17,29 +17,29 @@ $start = microtime(true);
 $hooks['app.routes'][0][] = function(App $app) {
     if ($app->core->debug) {
         return array(
-            array('hydra/debug/config', function(Request $request) {
+            array('GET', 'hydra/debug/config', function(Request $request) {
                 return new Response\DataResponse($request, $request->app->config->all(), "Debug info » Configuration");
             }),
-            array('hydra/debug/routes', function(Request $request) {
+            array('GET', 'hydra/debug/routes', function(Request $request) {
                 return new Response\DataResponse($request, $request->app->routes, "Debug info » Routes");
             }),
-            array('hydra/debug/env', function(Request $request) {
+            array('GET', 'hydra/debug/env', function(Request $request) {
                 return new Response\DataResponse($request, $_ENV, "Debug info » Environment");
             }),
-            array('hydra/debug/server', function(Request $request) {
+            array('GET', 'hydra/debug/server', function(Request $request) {
                 return new Response\DataResponse($request, $_SERVER, "Debug info » Server options");
             }),
-            array('hydra/debug/cookie', function(Request $request) {
+            array('GET', 'hydra/debug/cookie', function(Request $request) {
                 return new Response\DataResponse($request, $_COOKIE, "Debug info » Cookies");
             }),
-            array('hydra/debug/session', function(Request $request) {
+            array('GET', 'hydra/debug/session', function(Request $request) {
                 $request->app->session; // Start session
                 return new Response\DataResponse($request, $_SESSION, "Debug info » Session");
             }),
-            array('hydra/debug/phpinfo', function(Request $request) {
+            array('GET', 'hydra/debug/phpinfo', function(Request $request) {
                 return function() { phpinfo(); };
             }),
-            array('hydra/debug/batch', function(Request $request) {
+            array('GET', 'hydra/debug/batch', function(Request $request) {
                 $request->app->session['batch']['test'] = array(1, 2, 3, 4);
                 return new \Hydra\Response\RedirectResponse($request, 'hydra/batch/test');
             }),

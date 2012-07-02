@@ -14,7 +14,7 @@ namespace Hydra;
 
 $hooks['app.routes'][0][] = function(App $app) {
     return array(
-        array('hydra/batch/%id:batch', function(Request $request, $id, $format) {
+        array('GET', 'hydra/batch/%id:batch', function(Request $request, $id, $format) {
             $batch =& $request->app->session['batch'][$id];
 
             // Show overview page

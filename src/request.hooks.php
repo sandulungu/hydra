@@ -14,15 +14,6 @@ namespace Hydra;
 
 // Apply registered routes.
 $hooks['request.route'][1000][] = function (Request $request) {
-    $request->app->routes;
-    
-    // No user routes defined? Show an information page.
-    if (!$request->app->routes__defined) {
-        return new Action(function() {
-            return 'Please define your routes in <strong>web/index.php</strong> or create a controller in <strong>app/src/App/Controller/</strong> folder.';
-        });
-    }
-    
     foreach ($request->app->routes as $args) {
         $route = call_user_func_array('Hydra\Action::match', array(-1 => $request) + $args);
         if ($route) {

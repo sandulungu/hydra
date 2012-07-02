@@ -60,7 +60,7 @@ class App extends Container {
     const PERSIST_RESET_USE_CALLBACK = 'callback';
     
     protected $_hooks = array(), $_hookFiles = array();
-    var $requests = array(), $routes__defined = false;
+    var $requests = array();
     
     /**
      * @var \Hydra\Core

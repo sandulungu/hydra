@@ -25,9 +25,9 @@ class Action {
      * 
      * @return bool|Action On success return an Action instance.
      */
-    static function match(Request $request, $pattern, \Closure $callback = null, array $requirements = array(), array $defaults = array()) {
-        $requirements += array('format' => 'html', 'method' => 'GET');
-        if (($request->method == 'HEAD' ? 'GET' : $request->method) != $requirements['method']) {
+    static function match(Request $request, $http_method, $pattern, \Closure $callback = null, array $requirements = array(), array $defaults = array()) {
+        $requirements += array('format' => 'html');
+        if (($request->method == 'HEAD' ? 'GET' : $request->method) != $http_method) {
             return false;
         }
                 
@@ -61,7 +61,7 @@ class Action {
         
         $name = strtolower($pattern ?: 'homepage');
         $name = preg_replace('/:[a-z0-9_]+/', '', $name);
-        $name = preg_replace('/[^a-z0-9$]+/', '_', str_replace('%', '$', $name)) .'.'. strtolower($requirements['method']);
+        $name = preg_replace('/[^a-z0-9$]+/', '_', str_replace('%', '$', $name)) .'.'. strtolower($http_method);
         return new static($callback, $params, $name, $pattern);
     }
     
