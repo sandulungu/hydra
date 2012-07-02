@@ -17,6 +17,7 @@ $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
     $config['twig.options'] = array(
         'cache' => "{$app->core->data_dir}/cache/twig",
         'debug' => $app->core->debug,
+        'strict_variables' => true,
     );
     $config['twig.dirs'] = array();
     $app_views_dir = "{$app->core->app_dir}/views";

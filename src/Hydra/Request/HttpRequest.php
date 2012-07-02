@@ -48,19 +48,21 @@ class HttpRequest extends Request {
         return $this->server['SERVER_ADDR'];
     }
 
+    /**
+     * Get baseurl and webroot.
+     */
     function service__baseurl() {
-        
-        // Get base-url and web-root
         $url_rewritten = isset($_SERVER['REDIRECT_URL']);
-        $baseurl = $_SERVER['SCRIPT_NAME'];
+        $script = $_SERVER['SCRIPT_NAME'];
+        $uri = $_SERVER['REQUEST_URI'];
         if ($url_rewritten) {
-            $uri = $_SERVER['REQUEST_URI'];
-            for($i = 0; $i < strlen($uri) && $i < strlen($baseurl) && $uri{$i} == $baseurl{$i}; $i++) {}
-            $this->webroot = $baseurl = rtrim(substr($baseurl, 0, $i - 1), '/');
+            $uri_lowercase = strtolower($uri);
+            for($i = 0; $i < strlen($uri) && $i < strlen($script) && $uri_lowercase{$i} == $script{$i}; $i++) {}
+            $this->webroot = $baseurl = rtrim(substr($uri, 0, $i - 1), '/');
         } else {
+            $baseurl = substr($uri, 0, strlen($script));
             $this->webroot = dirname($baseurl);
         }
-        
         return $baseurl;
     }
     

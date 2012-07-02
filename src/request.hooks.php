@@ -19,7 +19,7 @@ $hooks['request.route'][1000][] = function (Request $request) {
     // No user routes defined? Show an information page.
     if (!$request->app->routes__defined) {
         return new Action(function() {
-            return 'Please define your routes in <strong>web/index.php or create a controller in <strong>app/src/App/Controller/</strong> folder.';
+            return 'Please define your routes in <strong>web/index.php</strong> or create a controller in <strong>app/src/App/Controller/</strong> folder.';
         });
     }
     
