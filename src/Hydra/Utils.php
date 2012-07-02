@@ -62,11 +62,13 @@ class Utils {
         }
         $iterator = new \AppendIterator();
         foreach ($dirs as $dir) {
-            $iterator->append(
-                new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($dir), \RecursiveIteratorIterator::CHILD_FIRST
-                )
-            );
+            if (is_dir($dir)) {
+                $iterator->append(
+                    new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($dir), \RecursiveIteratorIterator::CHILD_FIRST
+                    )
+                );
+            }
         }
         return $iterator;
     }
