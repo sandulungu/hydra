@@ -105,7 +105,7 @@ $hooks['app.init'][0][] = function (App $app) use (&$services) {
     }
 };
 
-$hooks['app.exception'][0][] = function(\Exception $ex, $dummy, App $app) {
+$hooks['app.exception'][0][] = function(\Exception $ex, &$dummy, App $app) {
     if ($app->config['monolog.logExceptions']) {
         $app->monolog__main->addError($ex);
     }

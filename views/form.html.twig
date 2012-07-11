@@ -1,0 +1,112 @@
+{% block checkbox_widget %}
+<label class="checkbox" for="{{ form.attributes['id'] }}">
+    <input{{ form.render('attributes')|raw }}{% if form.data %} checked{% endif %} type="checkbox" />
+    {{ form['label'] }}
+    {% if form.options['required'] %}<span class="required">*</span>{% endif %}
+</label>
+{% endblock %}
+
+{% block textarea_widget %}
+<textarea{{ form.render('attributes')|raw }}>{{ form.data }}</textarea>
+{% endblock %}
+
+{% block select_widget %}
+<select{{ form.render('attributes')|raw }}{% if form.options['multiple'] %} multiple{% endif %}>
+    {% for k,v in form.choices %}
+    {% if v is iterable %}
+    <optgroup label="{{ k }}">
+        {% for k2,v2 in v %}
+        <option value="{{ k2 }}"{% if form.options['multiple'] and k2 in form.data or not form.options['multiple'] and k2 == form.data %} selected{% endif %}>
+            {{ v2 }}
+        </option>
+        {% endfor %}
+    </optgroup>
+    {% else %}
+    <option value="{{ k }}"{% if form.options['multiple'] and k in form.data or not form.options['multiple'] and k == form.data %} selected{% endif %}>
+        {{ v }}
+    </option>
+    {% endif %}
+    {% endfor %}
+</select>
+{% endblock %}
+
+{% block list_widget %}
+{% for k,v in form.choices %}
+<label class="checkbox" for="{{ form.attributes['id'] }}-{{ k }}">
+    <input{{ form.render('attributes', {k: k})|raw }} type="{{ form.options['multiple'] ? 'checkbox' : 'radio' }}" value="{{ k }}"{% if form.options['multiple'] and k in form.data or not form.options['multiple'] and k == form.data %} checked{% endif %} />
+    {{ v }}
+</label>
+{% endfor %}
+</select>
+{% endblock %}
+
+{% block list_attributes %}
+{% for name, value in form.attributes %} {{ name }}="{{ name == 'id' ? value ~ '-' ~ k : value }}"{% endfor %}
+{% endblock %}
+
+{% block form_widget %}
+<form{{ form.render('attributes')|raw }} method="{{ form.options['method'] }}">
+    {%if form.options['method']|upper != 'GET' %}
+    <input name="{{ form.app.config['security']['token.param'] }}" value="{{ form.app['security.token'] }}" type="hidden" />
+    {% endif %}
+    <fieldset class="form">
+        <legend>{{ form['label'] }}</legend>
+        {{ block('subform_widget') }}
+    </fieldset>
+    {{ block('form_actions') }}
+</form>
+{% endblock %}
+
+{% block form_actions %}
+<div class="form-actions">
+    <button class="btn btn-primary">{{ form.options['submit']|default('Submit') }}</button>
+</div>
+{% endblock %}
+
+{% block collection_widget %}
+{% for form in form.children %}
+<div class="collection-row">
+{{ form.render('widget')|raw }}
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block subform_widget %}
+{% for form in form.children %}
+{{ form.render('row')|raw }}
+{% endfor %}
+{% endblock %}
+
+{% block errors %}
+{% for error in form.errors %}
+<div class="alert alert-error">{{ error }}</div>
+{% endfor %}
+{% endblock %}
+
+{% block row %}
+<div class="control-group form-row-{{ form.name }}{% if form.errors %} error{% endif %}">
+    {{ form.render('label')|raw }}
+    <div class="controls">
+        {{ form.render('errors')|raw }}
+        {{ form.render('widget')|raw }}
+        {% if form.options['help'] is defined %}
+        <span class="help-block">{{ form.options['help']|raw }}</span>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block widget %}
+<input{{ form.render('attributes')|raw }} value="{{ form.data }}" type="{{ form.type }}" />
+{% endblock %}
+
+{% block label %}
+<label class="control-label" for="{{ form.attributes['id'] }}">
+    {{ form['label'] }}
+    {% if form.options['required'] %}<span class="required">*</span>{% endif %}
+</label>
+{% endblock %}
+
+{% block attributes %}
+{% for name, value in form.attributes %} {{ name }}="{{ value }}"{% endfor %}
+{% endblock %}

@@ -21,9 +21,16 @@ $hooks['app.routes'][0][] = function (App $app) {
             if (!preg_match('/Controller\.php$/', $file)) {
                 continue;
             }
-            
             $classname = str_replace('/', '\\', substr($file, strlen($app_src_dir), -4));
-            $routes = array_merge($routes, $app->annotationsReader->forClass($classname, array('route')));
+            
+            // Prepare prefix
+            $app->annotationsReader->forClass($classname, array('route'));
+            
+            // Load routes
+            $routes = array_merge(
+                $routes, 
+                $app->annotationsReader->forClassMethods($classname, array('route'))
+            );
         }
         return $routes;
     });

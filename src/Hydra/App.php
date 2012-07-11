@@ -147,7 +147,7 @@ class App extends Container {
     /**
      * Renders a sub-request.
      */
-    public function render($path, $method = 'GET', array $query = array(), $data = null) {
+    function render($path, $method = 'GET', array $query = array(), $data = null) {
         return $this->dispatch($path, $method, $query, $data)->render();
     }
     
@@ -156,7 +156,7 @@ class App extends Container {
      * 
      * @return Response
      */
-    public function dispatch($path, $method = 'GET', $query = array(), $data = null) {
+    function dispatch($path, $method = 'GET', $query = array(), $data = null) {
         $request = new Request\HttpRequest($this, $path, $method, $query, $data);
         $this->requests[] = $request;
         $response = $request->dispatch();
@@ -166,7 +166,7 @@ class App extends Container {
     /**
      * Save/load data from/to file.
      */
-    public function persist($filename, $value = null, $reset = false) {
+    function persist($filename, $value = null, $reset = false) {
         $filename = "{$this->core->data_dir}/$filename";
         if ($reset) {
             if (!isset($value)) {
@@ -264,7 +264,7 @@ class App extends Container {
     /**
      * Alias for $this->hook($name, $in, array(), $merge_result = true)
      */
-    function infoHook($name, $in = null) {
+    function &infoHook($name, $in = null) {
         $out = array();
         return $this->hook($name, $in, $out, true);
     }
@@ -298,7 +298,9 @@ class App extends Container {
         return false;
     }
 
-    // TODO: Add gettext support
+    /**
+     * Translation fallback used by application that don't need interface translation.
+     */
     protected function fallback__translate($string, array $params = array(), array $options = array()) {
         return Utils::formatString($string, $params);
     }
@@ -354,7 +356,7 @@ class App extends Container {
     /**
      * Custom runtime configuration support. Equivalent to Drupal's variables.
      */
-    public function service__config() {
+    function service__config() {
         $app = $this;
         return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
             return $app->infoHook('app.config');
@@ -364,14 +366,14 @@ class App extends Container {
     /**
      * Cookies provider.
      */
-    public function service__cookie() {
+    function service__cookie() {
         return new Cookie($this);
     }
 
     /**
      * (Current) User provider.
      */
-    public function service__user() {
+    function service__user() {
         $session_key = $this->config->session['userKey'];
         if (!isset($this->session[$session_key])) {
             $this->session[$session_key] = new User($this);
@@ -382,20 +384,20 @@ class App extends Container {
     /**
      * Session provider.
      */
-    public function &service__session() {
+    function &service__session() {
         session_name($this->config['session']['name']);
         session_start();
         return $_SESSION;
     }
 
-    public function service__annotationsReader() {
+    function service__annotationsReader() {
         return new AnnotationsReader();
     }
 
     /**
      * Generates security salt, then reuses it.
      */
-    public function service__security__salt() {
+    function service__security__salt() {
         $filename = "{$this->core->data_dir}/security.salt";
         if (!file_exists($filename)) {
             $characterList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -412,7 +414,7 @@ class App extends Container {
     /**
      * Generates CSRF protection token and caches it in a session cookie on the client-side.
      */
-    public function service__security__token() {
+    function service__security__token() {
         $token_cookie = $this->config->security['token.cookie'];
         if (isset($this->cookie[$token_cookie])) {
             return $this->cookie[$token_cookie];
@@ -425,7 +427,7 @@ class App extends Container {
     /**
      * Default mime-type guesser.
      */
-    protected function service__mimetype__guesser() {
+    function service__mimetype__guesser() {
         return new MimeType\MimeTypeGuesser;
     }
     
@@ -434,7 +436,7 @@ class App extends Container {
      * 
      * Used for setting default content type for main responses.
      */
-    protected function service__mimetype__extensionGuesser() {
+    function service__mimetype__extensionGuesser() {
         return new MimeType\ExtensionMimeTypeGuesser;
     }
     

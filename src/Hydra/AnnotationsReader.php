@@ -21,7 +21,7 @@ class AnnotationsReader extends Container {
     function forMethod($classname, $method, array $filter = array()) {
         $reflection = new \ReflectionMethod($classname, $method);
         return $this->_parseDocComment(
-            $class->getDocComment(), 
+            $reflection->getDocComment(), 
             $filter,
             array('type' => 'method', 'method' => $reflection->getName(), 'class' => $classname)
         );
@@ -30,20 +30,24 @@ class AnnotationsReader extends Container {
     function forProperty($classname, $property, array $filter = array()) {
         $reflection = new \ReflectionProperty($classname, $property);
         return $this->_parseDocComment(
-            $class->getDocComment(), 
+            $reflection->getDocComment(), 
             $filter,
             array('type' => 'property', 'property' => $reflection->getName(), 'class' => $classname)
         );
     }
     
     function forClass($classname, array $filter = array()) {
-        $class = new \ReflectionClass($classname);
-        $annotations = $this->_parseDocComment(
-            $class->getDocComment(), 
+        $reflection = new \ReflectionClass($classname);
+        return $this->_parseDocComment(
+            $reflection->getDocComment(), 
             $filter,
-            array('type' => 'class', 'class' => $class->getName())
+            array('type' => 'class', 'class' => $reflection->getName())
         );
-        
+    }
+    
+    function forClassMethods($classname, array $filter = array()) {
+        $class = new \ReflectionClass($classname);
+        $annotations = array();
         foreach ($class->getMethods() as $method) {
             $annotations = array_merge($annotations, $this->_parseDocComment(
                 $method->getDocComment(), 
@@ -51,12 +55,17 @@ class AnnotationsReader extends Container {
                 array('type' => 'method', 'method' => $method->getName(), 'class' => $class->getName())
             ));
         }
-        
+        return $annotations;
+    }
+    
+    function forClassProperties($classname, array $filter = array()) {
+        $class = new \ReflectionClass($classname);
+        $annotations = array();
         foreach ($class->getProperties() as $property) {
             $annotations = array_merge($annotations, $this->_parseDocComment(
                 $property->getDocComment(), 
                 $filter,
-                array('type' => 'method', 'method' => $property->getName(), 'class' => $class->getName())
+                array('type' => 'property', 'property' => $property->getName(), 'class' => $class->getName())
             ));
         }
         
