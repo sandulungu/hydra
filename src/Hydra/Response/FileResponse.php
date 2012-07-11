@@ -41,7 +41,7 @@ class FileResponse extends Response {
             if (!$this->isPhp) {
                 $this->headers['Content-Type'] = $request->app->mimetype__guesser->guess($filename);
             } 
-            elseif ($request->app->config->response['guess_php_contentType']) {
+            elseif ($request->app->config->response['guessPhpContentType']) {
                 $this->headers['Content-Type'] = $request->app->mimetype__extensionGuesser->guess(substr($filename, 0, -4));
             }
         }
@@ -61,7 +61,7 @@ class FileResponse extends Response {
                 $app = $response->app;
                 require $response->filename;
             } else {
-                if ($response->app->config->response['x_sendfile']) {
+                if ($response->app->config->response['XSendfile']) {
                     $filename = realpath($response->filename);
                     header("X-Sendfile: $filename");
                 } else {

@@ -12,16 +12,19 @@
 
 namespace Hydra;
 
+mb_internal_encoding("UTF-8"); // We should never-ever have to change this.
+
 // Default app setings.
 $hooks['app.config'][-1000][] = function (&$config) {
-    $config['i18n.default_lang'] = 'en';
-    $config['vendor.web_dirs'] = array();
+    $config['i18n.defaultLang'] = 'en';
+    $config['vendor.webDirs'] = array();
     
-    $config['response']['guess_php_contentType'] = true;
-    $config['response']['x_sendfile'] = false;
-    $config['response']['render_string'] = true;
+    $config['response']['guessPhpContentType'] = true;
+    $config['response']['XSendfile'] = false;
+    $config['response']['renderString'] = true;
     
     $config['session']['name'] = 'hydra';
+    $config['session']['userKey'] = 'user';
     
     $config['cookie']['expiresIn'] = 60*60*24*365; // 1 year
     $config['cookie']['path'] = null;

@@ -15,9 +15,8 @@ namespace Hydra;
 /**
  * Class is used for default routing and action dispatching.
  */
-class Action {
+abstract class Action {
     
-    protected $_callback;
     var $name, $pattern, $params = array(); 
 
     /**
@@ -31,15 +30,15 @@ class Action {
             return false;
         }
                 
-        $types = array('format' => 'string');
+        $types = array('format' => 'safeString');
         $format_preg = substr($pattern, -1) == '/' ? '' : "(?:\.(?P<format>{$requirements['format']}))?";
         
-        $preg = preg_replace_callback('/[%$]([a-z0-9_]+)(?::([a-z0-9_]+))?(\*)?/', function($matches) use ($requirements, &$types) {
+        $preg = preg_replace_callback('/[%$]([A-Za-z0-9_]+)(?::([A-Za-z0-9_]+))?(\*)?/', function($matches) use ($requirements, &$types) {
             $name = $matches[1];
-            $types[$name] = empty($matches[2]) ? 'safe_string' : $matches[2];
+            $types[$name] = empty($matches[2]) ? 'safeString' : $matches[2];
             $chars = empty($matches[3]) ? '[^/]' : '.';
             return empty($requirements[$name]) ? "(?P<$name>$chars+?)" : "(?P<$name>{$requirements[$name]})";
-        }, strtr(trim($pattern, '/'), array('.', '\.')));
+        }, strtr(trim($pattern, '/'), array('.' => '\.')));
         
         if (!preg_match("`^$preg$format_preg$`", $request->path, $matches)) {
             return false;
@@ -59,15 +58,16 @@ class Action {
         list($default_format) = explode('|', $requirements['format']);
         $params += $defaults + array('format' => $default_format);
         
-        $name = strtolower($pattern ?: 'homepage');
-        $name = preg_replace('/:[a-z0-9_]+/', '', $name);
-        $name = preg_replace('/[^a-z0-9$]+/', '_', str_replace('%', '$', $name)) .'.'. strtolower($http_method);
-        return new static($callback, $params, $name, $pattern);
+        $name = Utils::sluggify($pattern, "/(:[a-z0-9_]+|[^a-z0-9$%])+/", 'strtolower', 'homepage');
+        $name = str_replace('%', '$', $name) .'.'. strtolower($http_method);
+        
+        return $callback ? 
+            new Action\CallbackAction($callback, $params, $name, $pattern) :
+            new Action\ControllerAction($params, $name, $pattern);
     }
     
-    function __construct(\Closure $callback = null, array $params = array('format' => 'html'), $name = 'default', $pattern = null) {
-        $this->_callback = $callback;
-        $this->params = $params;
+    function __construct(array $params = array(), $name = 'default', $pattern = null) {
+        $this->params = $params + array('format' => 'html');
         $this->name = $name;
         $this->pattern = $pattern;
     }
@@ -75,30 +75,7 @@ class Action {
     /**
      * Executes the associated controller/action or callback.
      */
-    function execute(Request $request) {
-        
-        // Use controller and action
-        if (!$this->_callback) {
-            $this->params += array(
-                '%controller'  => 'App\Controller\%sController', 
-                'controller'    => 'Default', 
-                'action'        => '__invoke'
-            );
-            $controller_class = sprintf($this->params['%controller'], ucfirst(preg_replace('/[^a-z0-9]+/i', '', $this->params['controller'])));
-            if (!class_exists($controller_class)) {
-                throw new Exception\InvalidControllerException("Controller not found: $controller_class.");
-            }
-            $controller = new $controller_class($request);
-            
-            $action_method = preg_replace('/[^a-z0-9]+/i', '', $this->params['action']) . 'Action';
-            if (!method_exists($controller, $action_method)) {
-                throw new Exception\InvalidControllerActionException("Action '$action_method' not not defined in controller: $controller_class.");
-            }
-            return $this->_invokeAction($request, $controller, $action_method);
-        }
-        
-        return $this->_invokeAction($request, $this->_callback);
-    }
+    abstract function execute(Request $request);
     
     /**
      * Inteligent invoker, mapping request parameters to method ones, using reflection.

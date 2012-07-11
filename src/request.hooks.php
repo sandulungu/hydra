@@ -43,7 +43,7 @@ $hooks['request.dispatch'][0][] = function (Request $request, &$response) {
     }
     
     if (is_string($response)) {
-        $response = $request->app->config->response['render_string'] ?
+        $response = $request->app->config->response['renderString'] ?
             new Response\RenderedResponse($request, null, $response) :
             new Response($request, $response);
     }
@@ -70,7 +70,7 @@ $hooks['response.before_send'][-1000][] = function (Response $response) {
 };
 
 // Better exception output for JSON, JS and other non-HTML requests
-$hooks['app.exception'][1000][] = function(\Exception $ex, $dummy, App $app) {
+$hooks['app.exception'][1000][] = function(\Exception $ex, &$dummy, App $app) {
     $request = reset($app->requests);
     $format = null;
     $debug = $app->core->debug;

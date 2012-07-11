@@ -12,6 +12,8 @@
 
 namespace Hydra\Dump;
 
+use Hydra\Utils;
+
 /**
  * Utility class giving a HTML representation of an object/array graph. 
  */
@@ -47,7 +49,7 @@ class Html {
         if (is_array($data)) {
             $lines = array();
             if ($numeric) {
-                $numeric = array_keys($data) === range(0, count($data) - 1);
+                $numeric = Utils::arrayIsNumeric($data);
             }
             foreach ($data as $key => $value) {
                 $lines[] = ($numeric ? '' : "<strong>$key</strong>: ") . self::dump($value, $indent + 1);
@@ -83,7 +85,7 @@ class Html {
         }
         elseif (is_string($data)) {
             if (preg_match('`^https?://[^\s]+$`', $data)) {
-                $data = htmlentities($data);
+                $data = Utils::htmlentities($data);
                 $data = "<a href='$data'>$data</a>";
             }
         }

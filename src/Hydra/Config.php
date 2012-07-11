@@ -17,14 +17,18 @@ namespace Hydra;
  * 
  * Performs transparent saving on value set/unset. 
  * 
- * @property string $i18n__default_lang
+ * @property string $i18n__defaultLang
+ * @property string $vendor__webDirs
+ * @property string $form__twigViews
+ *
+ * @property array  $app
  * @property array  $cookie
  * @property array  $session
  * @property array  $security
  * @property array  $response
+ * 
  * @property array  $assets__js
  * @property array  $assets__css
- * @property array  $app
  * 
  * @property array  $mongodb
  * @property array  $pdo
@@ -32,58 +36,35 @@ namespace Hydra;
  * @property array  $twig__options
  * @property array  $twig__dirs
  */
-class Config implements \ArrayAccess {
+class Config extends BaseConfig {
     
-    protected $_owner, $_cachedData, $_data;
+    /**
+     * @var App 
+     */
+    protected $_app;
+    
+    protected $_cachedData;
 
-    function __construct($owner, &$cachedData) {
-        $this->_owner = $owner;
+    function __construct($owner, array $cachedData = array()) {
+        $this->_app = $owner;
         $this->_cachedData = $cachedData;
         $this->_data = array_merge(
             $this->_cachedData,
-            $this->_owner->config__persist()
+            $this->_app->config__persist()
         );
-    }
-    
-    function all() {
-        return $this->_data;
-    }
-    
-    function __isset($name) {
-        return isset($this->_data[str_replace('__', '.', $name)]);
-    }
-    
-    function __get($name) {
-        return $this->_data[str_replace('__', '.', $name)];
     }
     
     function __set($name, $value) {
-        return $this->offsetSet(str_replace('__', '.', $name), $value);
-    }
-    
-    function __unset($name) {
-        return $this->offsetUnset(str_replace('__', '.', $name));
-    }
-    
-    function offsetExists($offset) {
-        return array_key_exists($offset, $this->_data);
-    }
-
-    function offsetGet($offset) {
-        return $this->_data[$offset];
-    }
-
-    function offsetSet($offset, $value) {
         $this->_data = array_merge(
             $this->_cachedData,
-            $this->_owner->config__persist($offset, $value)
+            $this->_app->config__persist($name, $value)
         );
     }
 
-    function offsetUnset($offset) {
+    function __unset($name) {
         $this->_data = array_merge(
             $this->_cachedData,
-            $this->_owner->config__persist($offset, null, true)
+            $this->_app->config__persist($name, null, true)
         );
     }
 

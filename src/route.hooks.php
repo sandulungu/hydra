@@ -46,10 +46,10 @@ $methods['app.normalize.vendor_web_dir'][0] = function(App $app, $name) {
     if ($name == 'data') {
         return "{$app->core->data_dir}/web";
     }
-    if (empty($app->config['vendor.web_dirs'][$name])) {
+    if (empty($app->config->vendor__webDirs[$name])) {
         return null;
     }
-    return $app->config['vendor.web_dirs'][$name];
+    return $app->config->vendor__webDirs[$name];
 };
 
 // Validator for plugin web folder

@@ -27,7 +27,7 @@ namespace Hydra;
  * 
  * Method access syntax:
  *  - $someclass->method__name($params, ...)
- *  - $someclass['method:method.name']($params, ...) // this will work only on PHP 5.3.9 or later
+ *  - $someclass['method:method.name']($params, ...) // this will work only on PHP 5.3.4 or later !!! TODO: Test this - .9 works!
  * 
  * Together with the hooking system, this forms Hydra's plugins architecture.
  */
@@ -95,12 +95,14 @@ class Container implements \ArrayAccess {
             if (!is_callable($factory)) {
                 throw new Exception\ContainerException("Service factory '$name' is not a valid callback.");
             }
+            $this->$name = null;
             $this->$name =& $factory($this);
             return $this->$name;
         }
         
         // Try a local call
         elseif (method_exists($this, "service__$name")) {
+            $this->$name = null;
             $this->$name =& $this->{"service__$name"}($this);
             return $this->$name;
         }

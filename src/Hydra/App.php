@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @property Config             $config
  * @property array              $session
  * @property Cookie             $cookie
+ * @property User               $user
  * @property \Twig_Environment  $twig
  * @property \PDO               $pdo
  * @property \MongoDB           $mongodb
@@ -40,6 +41,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @method bool     run()
  * @method mixed    cache($name, $value = null, $ttl = 0, $reset = null)
  * @method mixed    config__persist($name, $value, $reset)
+ * @method string   translate($string, array $params = array(), array $options = array())
  * 
  * @method mixed    dump__json($data)
  * @method mixed    dump__html($data)
@@ -49,11 +51,10 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @method mixed    normalize__bool($data)
  * @method mixed    normalize__array($data)
  * @method mixed    normalize__string($data)
+ * @method mixed    normalize__safeString($data)
  * 
- * @method \Hydra\App route__get($pattern, $callback, $requirements = array(), $defaults = array())
- * @method \Hydra\App route__post($pattern, $callback, $requirements = array(), $defaults = array())
- * @method \Hydra\App route__put($pattern, $callback, $requirements = array(), $defaults = array())
- * @method \Hydra\App route__delete($pattern, $callback, $requirements = array(), $defaults = array())
+ * @method \Hydra\Form form(array $options, Form $form = null)
+ * @method \Hydra\App  route($http_method, $pattern, $callback, $requirements = array(), $defaults = array())
  */
 class App extends Container {
     
@@ -80,7 +81,7 @@ class App extends Container {
     /**
      * @return App
      */
-    static function getInstance(ClassLoader $autoloader = NULL, array $core_config = array()) {
+    static function getInstance(ClassLoader $autoloader = null, array $core_config = array()) {
         if (!self::$_instance) {
             if (!$autoloader) {
                 throw new \LogicException('The application requires an instance of Composer\Autoload\ClassLoader.');
@@ -90,7 +91,7 @@ class App extends Container {
         return self::$_instance;
     }
     
-    function __construct(ClassLoader $autoloader, $core_config) {
+    function __construct(ClassLoader $autoloader, array $core_config) {
         if (self::$_instance) {
             throw new \LogicException('The application is a singleton. Use Hydra\App::getInstance().');
         }
@@ -179,9 +180,9 @@ class App extends Container {
         if (isset($value)) {
             if ($reset === self::PERSIST_RESET_USE_CALLBACK && $value instanceof \Closure) {
                 $data = file_exists($filename) ? unserialize(file_get_contents($filename)) : null;
-                $data = $value($data);
+                $data = $value($data, $this);
             } else {
-                $data = $value instanceof \Closure ? $value() : $value;
+                $data = $value instanceof \Closure ? $value($this) : $value;
             }
             file_put_contents($filename, serialize($data));
             return $data;
@@ -226,7 +227,7 @@ class App extends Container {
      * @param mixed $out
      * @return mixed $out 
      */
-    function &hook($name, $in = null, &$out = array(), $merge_result = false) {
+    function &hook($name, $in = null, &$out = null, $merge_result = false) {
         if (empty($this->_hooks[$name])) {
             return $out;
         }
@@ -297,6 +298,11 @@ class App extends Container {
         return false;
     }
 
+    // TODO: Add gettext support
+    protected function fallback__translate($string, array $params = array(), array $options = array()) {
+        return Utils::formatString($string, $params);
+    }
+    
     /**
      * Pluggable caching engine.
      * 
@@ -360,6 +366,17 @@ class App extends Container {
      */
     public function service__cookie() {
         return new Cookie($this);
+    }
+
+    /**
+     * (Current) User provider.
+     */
+    public function service__user() {
+        $session_key = $this->config->session['userKey'];
+        if (!isset($this->session[$session_key])) {
+            $this->session[$session_key] = new User($this);
+        }
+        return $this->session[$session_key];
     }
 
     /**

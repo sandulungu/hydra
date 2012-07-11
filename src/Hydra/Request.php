@@ -55,7 +55,7 @@ class Request extends Container {
      * Multiplingual support should be implemented in an external service.
      */
     function service__lang() {
-        return $this->app->config->i18n__default_lang;
+        return $this->app->config->i18n__defaultLang;
     }
     
     /**
@@ -79,7 +79,7 @@ class Request extends Container {
                 });
             }
             
-            throw new Exception\NotFoundHttpException("No route matched path: {$this->path}.");
+            throw new Exception\NotFoundHttpException("No route matched path: {$this->method} /{$this->path}.");
         }
         return $action;
     }

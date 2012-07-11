@@ -20,7 +20,7 @@ namespace Hydra;
  * @property string $hydra__token
  * @property string $hydra
  */
-class Cookie implements \ArrayAccess {
+class Cookie extends BaseConfig {
     
     /**
      * @var App 
@@ -34,8 +34,8 @@ class Cookie implements \ArrayAccess {
         $this->_data =& $_COOKIE;
     }
 
-    function set($offset, $value, $expiresIn = null, $path = null, $domain = null, $secure = null, $httponly = null) {
-        $name = str_replace('.', '__', $offset);
+    function set($name, $value, $expiresIn = null, $path = null, $domain = null, $secure = null, $httponly = null) {
+        $name = str_replace('.', '__', $name);
         $this->_data[$name] = $value;
         setcookie(
             $name, $value, 
@@ -48,38 +48,20 @@ class Cookie implements \ArrayAccess {
     }
     
     function __isset($name) {
-        return isset($this->_data[str_replace('__', '.', $name)]);
+        return isset($this->_data[str_replace('.', '__', $name)]);
     }
     
-    function __get($name) {
-        return $this->_data[str_replace('__', '.', $name)];
+    function &__get($name) {
+        return $this->_data[str_replace('.', '__', $name)];
     }
     
     function __set($name, $value) {
-        return $this->set(str_replace('__', '.', $name), $value);
+        $this->set($name, $value);
     }
     
     function __unset($name) {
-        return $this->offsetUnset(str_replace('__', '.', $name));
-    }
-    
-    function offsetExists($offset) {
-        $name = str_replace('.', '__', $offset);
-        return array_key_exists($name, $this->_data);
-    }
-
-    function offsetGet($offset) {
-        $name = str_replace('.', '__', $offset);
-        return $this->_data[$name];
-    }
-
-    function offsetSet($offset, $value) {
-        $this->set($offset, $value);
-    }
-
-    function offsetUnset($offset) {
-        $this->set($offset, '');
-        $name = str_replace('.', '__', $offset);
+        $name = str_replace('.', '__', $name);
+        $this->set($name, '');
         unset($this->_data[$name]);
     }
 

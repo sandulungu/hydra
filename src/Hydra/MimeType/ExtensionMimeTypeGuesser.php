@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
 
 class ExtensionMimeTypeGuesser extends SymfonyGuesser implements MimeTypeGuesserInterface {
     function guess($path) {
-        $ext = Utils::fileExt($path, true);
+        $ext = Utils::fileExt($path);
         if ($ext == 'jpg' || $ext == 'jpe') {
             $ext = 'jpeg';
         }

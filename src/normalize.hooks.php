@@ -25,7 +25,13 @@ $methods['app.normalize.bool'][0] = function(App $app, $data) {
 };
 
 $methods['app.normalize.array'][0] = function(App $app, $data) {
-    return is_array($data) ? $data : explode(',', $data);
+    if (is_array($data)) {
+        return $data;
+    }
+    if ($data && is_string($data)) {
+        return explode(',', $data);
+    }
+    return $data ? array($data) : array();
 };
 
 $methods['app.normalize.string'][0] = function(App $app, $data) {
@@ -34,6 +40,6 @@ $methods['app.normalize.string'][0] = function(App $app, $data) {
 
 // Prevent XSS attacks by invalidating possible HTML tags. 
 // This is the default param filter.
-$methods['app.normalize.safe_string'][0] = function(App $app, $data) {
+$methods['app.normalize.safeString'][0] = function(App $app, $data) {
     return str_replace('<', '', $data);
 };

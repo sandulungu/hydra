@@ -12,4 +12,4 @@
 
 namespace Hydra\Exception;
 
-class ContainerException extends \RuntimeException {}
+class ContainerException extends \LogicException {}

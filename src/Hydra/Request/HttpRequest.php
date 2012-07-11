@@ -56,7 +56,7 @@ class HttpRequest extends Request {
         $script = $_SERVER['SCRIPT_NAME'];
         $uri = $_SERVER['REQUEST_URI'];
         if ($url_rewritten) {
-            $uri_lowercase = strtolower($uri);
+            $uri_lowercase = mb_strtolower($uri);
             for($i = 0; $i < strlen($uri) && $i < strlen($script) && $uri_lowercase{$i} == $script{$i}; $i++) {}
             $this->webroot = $baseurl = rtrim(substr($uri, 0, $i - 1), '/');
         } else {
