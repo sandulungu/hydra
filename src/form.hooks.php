@@ -31,8 +31,19 @@ $methods['app.form'][0] = function(App $app, array $options, Form $form = null) 
     return $form;
 };
 
-// Create a default form.
+// Usage of custom form classes.
+// When creating your Form types, most probably, you'll want to use something similar.
 $hooks['form.init'][0][] = function(array &$options, &$form, App $app) {
+    if (isset($options['type'])) {
+        $type = $options['type'];
+        if ($type == 'list' || $type == 'select') {
+            $form = new Form\SelectField($app, $options);
+        }
+    }
+};
+
+// Create a default form.
+$hooks['form.init'][1000][] = function(array &$options, &$form, App $app) {
     if (!$form) {
         $form = new Form($app, $options);
     }
@@ -43,15 +54,26 @@ $hooks['form.options'][0][] = function(Form $form, array &$options) {
     $twig_blocks =& $options['twigBlocks'];
     foreach ($form->behaviors as $behavior) {
         switch ($behavior) {
-            case 'checkbox':
-                $twig_blocks += array('widget' => 'checkbox_widget', 'label' => false);
+            
+            // Core Form
+            case 'form':
+                $twig_blocks += array('widget' => "form_widget");
+                $options += array('method' => 'POST');
                 break;
-
             case 'hidden':
                 $options['errorBubble'] = true;
                 $twig_blocks += array('row' => 'widget', 'label' => false);
                 break;
-
+            case 'checkbox':
+                $twig_blocks += array('widget' => 'checkbox_widget', 'label' => false);
+                break;
+            case 'textarea':
+            case 'subform':
+            case 'collection':
+                $twig_blocks += array('widget' => "{$form->type}_widget");
+                break;
+            
+            // SelectField
             case 'list':
                 $twig_blocks += array('attributes' => 'list_attributes');
             case 'select':
@@ -63,26 +85,12 @@ $hooks['form.options'][0][] = function(Form $form, array &$options) {
                 }
                 $twig_blocks += array('widget' => "{$form->type}_widget");
                 break;
-
-            case 'form':
-                $twig_blocks += array('widget' => "form_widget");
-                $options += array('method' => 'POST');
-                break;
-
-            case 'textarea':
-            case 'subform':
-            case 'collection':
-                $twig_blocks += array('widget' => "{$form->type}_widget");
-                break;
         }
     }
 };
 
 // Default form type guesser.
 $hooks['form.type'][1000][] = function(Form $form) {
-    if ($form->choices) {
-        return 'select';
-    }
     if ($form->hasChildren) {
         if (!$form->parent) {
             return 'form';
@@ -170,12 +178,27 @@ $hooks['form.validate'][-500][] = function(Form $form, &$data) {
 
 };
 
-// Apply defined validators (main validation).
 $hooks['form.validate'][0][] = function(Form $form, &$data) {
-    if ($form->choices) {
-        // TODO...
+
+    // Validate user choice(s).
+    if ($data && $form instanceof Form\SelectField) {
+        $values = $form->options['multiple'] ? $data : array($data);
+        foreach ($form->choices as $k => $v) {
+            if ($v instanceof \Traversable) {
+                $v = iterator_to_array($v);
+            }
+            $values = array_diff($values, is_array($v) ? array_keys($v) : array($k));
+            if (!$values) {
+                break;
+            }
+        }
+        if ($values) {
+            $form->addError('invalid_choices', array('$choices' => implode(', ', $values)));
+            return false;
+        }
     }
     
+    // Apply defined validators (main validation).
     foreach ($form->validators as $validator) {
         if (!$validator->validate($data)) {
             return false;

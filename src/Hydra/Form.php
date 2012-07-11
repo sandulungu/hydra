@@ -26,7 +26,6 @@ namespace Hydra;
  * @property array $children
  * @property bool $hasChildren
  * @property bool $valid
- * @property array|Traversable $choices
  * @property array $validators
  * @property array $behaviors
  * @property string $type
@@ -172,8 +171,11 @@ class Form extends Container {
         if (isset($this->options['messages'][$message])) {
             $message = $this->options['messages'][$message];
         }
-        if (isset($validator->options['messages'][$message])) {
+        elseif (isset($validator->options['messages'][$message])) {
             $message = $this->options['messages'][$message];
+        }
+        else {
+            $message = Utils::humanize($message);
         }
         
         $form = $this;
@@ -270,17 +272,6 @@ class Form extends Container {
 
     function service__hasChildren() {
         return (bool)$this->children;
-    }
-    
-    function service__choices() {
-        $choices =& $this->options['choices'];
-        if ($choices instanceof \Closure) {
-            $choices = $choices($this);
-        }
-        if ($choices && !is_array($choices) && !$choices instanceof \Traversable) {
-            throw new \LogicException("Form choices should be an array or Traversable class.");
-        }
-        return $choices;
     }
     
     function &service__data() {
