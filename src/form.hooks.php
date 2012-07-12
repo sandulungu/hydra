@@ -55,22 +55,58 @@ $hooks['form.options'][0][] = function(Form $form, array &$options) {
     foreach ($form->behaviors as $behavior) {
         switch ($behavior) {
             
-            // Core Form
+            // Core forms
             case 'form':
                 $twig_blocks += array('widget' => "form_widget");
                 $options += array('method' => 'POST');
                 break;
+            case 'subform':
+            case 'collection':
+                $twig_blocks += array('widget' => "{$form->type}_widget");
+                break;
+            
+            // Core fields
+            case 'textarea':
+                $form->children = false;
+                $twig_blocks += array('widget' => "textarea_widget");
+                break;
             case 'hidden':
+                $form->children = false;
                 $options['errorBubble'] = true;
                 $twig_blocks += array('row' => 'widget', 'label' => false);
                 break;
             case 'checkbox':
+                $form->children = false;
                 $twig_blocks += array('widget' => 'checkbox_widget', 'label' => false);
                 break;
-            case 'textarea':
-            case 'subform':
-            case 'collection':
-                $twig_blocks += array('widget' => "{$form->type}_widget");
+            case 'file':
+                if ($form->parentForm) {
+                    $form->parentForm->options['attributes']['enctype'] = "multipart/form-data";
+                }
+                $form->children = false;
+                break;
+            case 'text':
+            case 'password':
+            case 'image':
+            case 'submit':
+                
+            // HTML5 fields
+            // Description & browser support info: http://www.w3schools.com/html5/html5_form_input_types.asp
+            // TODO: Add default validators and data types
+            case 'color':
+            case 'date':
+            case 'datetime':
+            case 'datetime-local':
+            case 'email':
+            case 'month':
+            case 'number':
+            case 'range':
+            case 'search':
+            case 'tel':
+            case 'time':
+            case 'url':
+            case 'week':
+                $form->children = false;
                 break;
             
             // SelectField
@@ -100,6 +136,9 @@ $hooks['form.type'][1000][] = function(Form $form) {
     if (is_bool($form->data)) {
         return 'checkbox';
     }
+    if (is_int($form->data)) {
+        return 'number';
+    }
     if (is_string($form->data) && strpos($form->data, "\n") !== false) {
         return 'textarea';
     }
@@ -108,7 +147,7 @@ $hooks['form.type'][1000][] = function(Form $form) {
 
 // Default children guesser (supports plain objects and arrays).
 $hooks['form.children'][1000][] = function(Form $form, &$children) {
-    if ($children === null && (is_object($form->data) || is_array($form->data)) && !isset($form->options['choices'])) {
+    if ($children === null && (is_object($form->data) || is_array($form->data))) {
         $children = array();
         $columns = array_keys(is_array($form->data) ? $form->data : get_object_vars($form->data));
         foreach ($columns as $name) {

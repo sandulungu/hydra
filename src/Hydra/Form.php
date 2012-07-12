@@ -23,6 +23,8 @@ namespace Hydra;
  * Make sure you test well any new Form workflow, especially when relying on guessers.
  * 
  * @property mixed $data
+ * @property mixed $webData
+ * @property Form $parentForm
  * @property array $children
  * @property bool $hasChildren
  * @property bool $valid
@@ -198,7 +200,7 @@ class Form extends Container {
     
     function bind($data, $validate = true) {
         $validate && $this->validate($data);
-        $this->data = $this->app->hook('form.bind', $this, $data);
+        $this->webData = $this->app->hook('form.bind', $this, $data);
         return $this->valid;
     }
     
@@ -214,6 +216,20 @@ class Form extends Container {
         return $this->app->hook('form.type', $this);
     }
 
+    function service__parentForm() {
+        $form = $this->parent;
+        if (!$form) {
+            return;
+        }
+        while (!in_array('form', $form->behaviors)) {
+            if (!$form->parent) {
+                return;
+            }
+            $form = $form->parent;
+        }
+        return $form;
+    }
+    
     function service__behaviors() {
         $behaviors = array(-1 => $this->type);
         if ($this->options['behaviors']) {
@@ -260,21 +276,34 @@ class Form extends Container {
     function service__children() {
         $children = $this->options['children'];
         $this->app->hook('form.children', $this, $children);
+        
+        // set a consistent value for the cases when children are not supported
         if (!is_array($children)) {
-            $children = array();
+            $children = false;
         }
         
-        foreach ($children as $name => &$subform) {
-            $this->_prepareChild($name, $subform);
+        if ($children) {
+            foreach ($children as $name => &$subform) {
+                $this->_prepareChild($name, $subform);
+            }
         }
         return $children;
     }
 
     function service__hasChildren() {
+        // not sure what to return in case of empty array (may have children, but currently doesn't)
         return (bool)$this->children;
     }
     
+    function &service__webData() {
+        return $this->app->hook('form.transform.toWeb', $this, $this->data);
+    }
+    
     function &service__data() {
+        if (isset($this->webData)) {
+            return $this->app->hook('form.transform.fromWeb', $this, $this->webData);
+        }
+        
         $data = array();
         if (isset($this->options['data'])) {
             if ($this->options['data'] instanceof \Closure) {
@@ -344,9 +373,11 @@ class Form extends Container {
     }
     
     function service__valid() {
-        foreach ($this->children as $subform) {
-            if (!$subform->valid) {
-                return false;
+        if ($this->hasChildren) {
+            foreach ($this->children as $subform) {
+                if (!$subform->valid) {
+                    return false;
+                }
             }
         }
         return !$this->_hasErrors;

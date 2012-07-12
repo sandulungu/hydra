@@ -1,13 +1,13 @@
 {% block checkbox_widget %}
 <label class="checkbox" for="{{ form.attributes['id'] }}">
-    <input{{ form.render('attributes')|raw }}{% if form.data %} checked{% endif %} type="checkbox" />
+    <input{{ form.render('attributes')|raw }}{% if form.webData %} checked{% endif %} type="checkbox" />
     {{ form['label'] }}
     {% if form.options['required'] %}<span class="required">*</span>{% endif %}
 </label>
 {% endblock %}
 
 {% block textarea_widget %}
-<textarea{{ form.render('attributes')|raw }}>{{ form.data }}</textarea>
+<textarea{{ form.render('attributes')|raw }}>{{ form.webData }}</textarea>
 {% endblock %}
 
 {% block select_widget %}
@@ -16,13 +16,13 @@
     {% if v is iterable %}
     <optgroup label="{{ k }}">
         {% for k2,v2 in v %}
-        <option value="{{ k2 }}"{% if form.options['multiple'] and k2 in form.data or not form.options['multiple'] and k2 == form.data %} selected{% endif %}>
+        <option value="{{ k2 }}"{% if form.options['multiple'] and k2 in form.webData or not form.options['multiple'] and k2 == form.webData %} selected{% endif %}>
             {{ v2 }}
         </option>
         {% endfor %}
     </optgroup>
     {% else %}
-    <option value="{{ k }}"{% if form.options['multiple'] and k in form.data or not form.options['multiple'] and k == form.data %} selected{% endif %}>
+    <option value="{{ k }}"{% if form.options['multiple'] and k in form.webData or not form.options['multiple'] and k == form.webData %} selected{% endif %}>
         {{ v }}
     </option>
     {% endif %}
@@ -33,7 +33,7 @@
 {% block list_widget %}
 {% for k,v in form.choices %}
 <label class="checkbox" for="{{ form.attributes['id'] }}-{{ k }}">
-    <input{{ form.render('attributes', {k: k})|raw }} type="{{ form.options['multiple'] ? 'checkbox' : 'radio' }}" value="{{ k }}"{% if form.options['multiple'] and k in form.data or not form.options['multiple'] and k == form.data %} checked{% endif %} />
+    <input{{ form.render('attributes', {k: k})|raw }} type="{{ form.options['multiple'] ? 'checkbox' : 'radio' }}" value="{{ k }}"{% if form.options['multiple'] and k in form.webData or not form.options['multiple'] and k == form.webData %} checked{% endif %} />
     {{ v }}
 </label>
 {% endfor %}
@@ -97,7 +97,7 @@
 {% endblock %}
 
 {% block widget %}
-<input{{ form.render('attributes')|raw }} value="{{ form.data }}" type="{{ form.type }}" />
+<input{{ form.render('attributes')|raw }} value="{{ form.webData }}" type="{{ form.type }}" />
 {% endblock %}
 
 {% block label %}
