@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Hydra by z7</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Hydra</h1>
+        <p>The cozy RESTfull PHP5.3 micro-framework.</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/z7/hydra" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/z7/hydra/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/z7/hydra/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>Hydra</h1>
+
+<p>The cozy RESTfull PHP5.3 micro-framework.</p>
+
+<ul>
+<li><a href="http://z7.github.com/hydra">Homepage</a></li>
+<li><a href="https://github.com/z7/hydra_app">Application template</a></li>
+</ul><h2>Requirements</h2>
+
+<ul>
+<li>Http server (Apache 2 with "AllowOverride All" recommended)</li>
+<li>PHP 5.3</li>
+</ul><h2>Getting started</h2>
+
+<ol>
+<li>Download the <a href="https://github.com/z7/hydra_app/zipball/master">default application template</a>.</li>
+<li>Extract it somewhere in your Apache web folder, for example in <em>hydra_app</em>. Make sure the application is able to create <strong>data</strong> and <strong>hydra</strong> subfolders.</li>
+<li>Insert the following lines in <strong>web/index.php</strong> just before <code>$app-&gt;run();</code>
+</li>
+</ol><div class="highlight">
+<pre><span class="x">$app-&gt;route('GET', 'hello/%name', function($name) {</span>
+<span class="x">  return "Hello, $name!";</span>
+<span class="x">});</span>
+</pre>
+</div>
+
+
+<p>Open http://localhost/hydra_app/hello/John in your browser to see execution result.</p>
+
+<p>See our <a href="https://github.com/z7/hydra/wiki">wiki</a> for more <a href="https://github.com/z7/hydra/wiki/Samples">usage samples</a>.</p>
+
+<h2>Features</h2>
+
+<ul>
+<li>
+<strong>Strong security</strong>: XSS, click-jacking, CSRF and code injection protection. Form and request data normalization.</li>
+<li>
+<strong>Router</strong> with support for both, callback and <strong>controller</strong> classes (using annotations).</li>
+<li>JSON and HTML <strong>data dumping</strong> for super-quick web-service prototyping.</li>
+<li>
+<strong>Form builder</strong> with guessers, allowing to directly edit any data with just one <code>$app-&gt;form(array('data' =&gt; $data))</code> call.</li>
+<li>
+<strong>Service container</strong>, including with the possibility to inject both services and factories (properties and methods) and extend/overwrite/unset them at run-time. No more problems with extending core classes.</li>
+<li>
+<strong>Hooking system</strong> with intuitive execution flow control (weighted hooks) and auto-scanning of plugin hook files.</li>
+<li>Sample service implementations on the example of <strong>MongoDB</strong> and <strong>PDO</strong> classes.</li>
+<li>
+<strong>Caching</strong> - to run even faster when in production.</li>
+<li>Simple <strong>Requests/Response</strong> workflow with ability to stream content; hooks at every step of the flow with interruption abilities.</li>
+<li>
+<strong>Session</strong>, <strong>Cookies</strong> and <strong>Persistent Configuration</strong> - just set a property/value in these array-access enabled services and it will be there on subsequent request. Or you can use the IDE auto-completed object access syntax for known properties. Almost magic!</li>
+<li>
+<a href="http://twig.sensiolabs.org/">Twig</a>. Of course you can make your own PHP templates or even a template engine, but first, take a look at what Twig has to offer.</li>
+<li>
+<a href="https://github.com/Seldaek/monolog">Monolog</a> <strong>logging</strong> + FirePHP/ChromePHP support + Symfony's <strong>Exceptions handler</strong> with debug/production presets = easy debugging.</li>
+<li>Extremely friendly with IDEs. All services and dynamic methods support auto-completion.</li>
+<li>Clean UI created using <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a>.</li>
+<li>Distributed in source code, as standalone <strong>phar</strong> and the <em>z7/hydra</em> <strong>composer package</strong>.</li>
+</ul><h2>Why yet another framework?</h2>
+
+<p>I want to break some PHP stereotypes just like John Resig did with jQuery in the JavaScript world.</p>
+
+<p>Hydra's concept was born during the prototyping of several REST applications. Initially I used Silex. At that moment I thought it was a very good micro-framework to quickly wire-up the RESTfull routes with some MongoDB and PDO code. Some time later it was obvious that, while the closures and route patterns were nice and cool, the service container wasn't that intuitive and powerful after all. No IDE auto-completion for services, strange syntax, bloated functionality providers, it didn't just work out-of-the-box like I wanted it to. Another thing, I noticed was the slowdowns determined by the missing of a caching routine and heavy components architecture, while I only needed basic IO, mostly already provided natively by PHP. Of course, there were nice concepts you'll find in Hydra as well...</p>
+
+<p>My conclusion was that most of the frameworks, even tiny ones give too much attention to classical OOP patterns, while not taking advantage of some of the best things PHP has to offer. Some are over-bloated by reinventing better implementations of standard features that are already available in PHP. While there are some exceptions, most of them give very small added value while slowing things down. In the end it seemed less time consuming to just take the good components (like theming, logging, error handling) from the best players out there and rethink only the core to be thinner and more flexible.</p>
+
+<p>Ingredients used:</p>
+
+<ul>
+<li>
+<a href="http://symfony.com/components">Symfony Components</a> (Error/Exception Handlers, MimeType guessers)</li>
+<li><a href="http://twig.sensiolabs.org/">Twig</a></li>
+<li><a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a></li>
+<li><a href="https://github.com/Seldaek/monolog">Monolog</a></li>
+</ul><h2>Why you called it "Hydra"?</h2>
+
+<p>Because of the vision. A hydra (mythological creature) can grow heads dynamically. </p>
+
+<p>We tried to apply this ad-hock growing to OOP. Until version 5.3 this was harder to achieve and before 5.0 impossible at all. Now, that we've got magic methods, closures, SPL and the classical interpreter features we had the opportunity to combine them all into a very flexible, yet simple dependency injection system. It's the cool run-time objects morphing brought to a new level.</p>
+
+<h2>Contributing</h2>
+
+<p>Hydra is right now in an early stage of development, so your feedback is VERY, VERY important.
+Share, discuss, post issues and feature requests, write review. The best has yet to come!</p>
+
+<p>If you want to contribute source code, please <a href="https://github.com/z7/hydra/issues/new">leave a message in the tracker</a> or write directly to <a href="mailto:sandu@lungu.info">sandu@lungu.info</a>.</p>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/z7">z7</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-33519750-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
