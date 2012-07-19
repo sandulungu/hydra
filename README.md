@@ -20,7 +20,6 @@ Getting started
 3. Insert the following lines in __web/index.php__ just before ```$app->run();```
 
 ```php
-..........
 $app->route('GET', 'hello/%name', function($name) {
   return "Hello, $name!";
 });
