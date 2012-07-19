@@ -2,8 +2,8 @@
     "name": "z7/hydra",
     "type": "library",
     "description": "Hydra micro-framework",
-    "homepage": "https://github.com/z7/hydra",
-    "license": "BSD-3",
+    "homepage": "http://z7.github.com/hydra",
+    "license": "MIT",
     "authors": [
         {
             "name": "Sandu Lungu",
