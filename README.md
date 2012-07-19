@@ -25,7 +25,7 @@ $app->route('GET', 'hello/%name', function($name) {
 });
 ```
 
-Open your in your browser http://localhost/hydra_app/hello/John to see the result.
+Open http://localhost/hydra_app/hello/John in your browser to see execution result.
 
 See our [wiki](https://github.com/z7/hydra/wiki) for more [usage samples](https://github.com/z7/hydra/wiki/Samples).
 
