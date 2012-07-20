@@ -21,11 +21,11 @@ class ControllerAction extends Action {
     function execute(Request $request) {
         $this->params += array(
             // we use '.' character here for an obscure security reason >:)
-            'controller.format' => 'App\Controller\%sController',
+            'controller.class' => 'App\Controller\%sController',
             'controller'        => 'Default', 
             'action'            => 'default'
         );
-        $controller_class = sprintf($this->params['controller.format'], ucfirst(preg_replace('/[^a-z0-9]+/i', '', $this->params['controller'])));
+        $controller_class = sprintf($this->params['controller.class'], ucfirst(preg_replace('/[^a-z0-9]+/i', '', $this->params['controller'])));
         if (!class_exists($controller_class)) {
             throw new Exception\InvalidControllerException("Controller not found: $controller_class.");
         }

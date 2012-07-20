@@ -20,14 +20,14 @@ namespace Hydra;
  * 
  * Service access syntax:
  *  - $someclass->service__name->...
- *  - $someclass['service.name']->... // if the service is not an object, this call will return a copy (PHP limitation)
+ *  - $someclass['service.name']->... // if the service is not an object, this call will return a copy (PHP < 5.3.4 limitation)
  * 
  * Inject methods in your hook files:
  *    $methods["someclass.method.name"][] = function($params, ...) {...};
  * 
  * Method access syntax:
  *  - $someclass->method__name($params, ...)
- *  - $someclass['method:method.name']($params, ...) // this will work only on PHP 5.3.4 or later !!! TODO: Test this - .9 works!
+ *  - $someclass['method:method.name']($params, ...) // this will work only on PHP 5.3.4 or later
  * 
  * Together with the hooking system, this forms Hydra's plugins architecture.
  */

@@ -12,23 +12,72 @@
 
 namespace Hydra;
 
+// We have to use this ugly hack because sometimes PHP really suxx.
+$error_reporting = error_reporting();
+error_reporting(0);
+
 /**
  * Base configuration class.
  */
-class BaseConfig implements \ArrayAccess {
+class ArrayObject implements \ArrayAccess, \IteratorAggregate, \Countable {
     
     protected $_data;
 
     function __construct(array &$data = array()) {
         $this->_data =& $data;
     }
+    
+    function getIterator () {
+        return new \ArrayIterator(&$this->_data); // this line will trigger a call_time_pass_reference notice
+    }
+    
+    function count() {
+        return count($this->_data);
+    }
 
-    function all() {
+    /**
+     * Get a reference to the inner array object.
+     * 
+     * This function may be useful for passing by reference to functions
+     * expecting an array parameter. Example: sorting functions.
+     * 
+     * @return array
+     */
+    function &getArray() {
         return $this->_data;
     }
     
+    /**
+     * @see \ArrayObject
+     */
+    function getArrayCopy() {
+        return $this->_data;
+    }
+    
+    /**
+     * @see \ArrayObject
+     */
+    function append($value) {
+        $this->_data[] = $value;
+    }
+    
+    /**
+     * Getter.
+     * 
+     * A time-saver function that may be used instead of a ternary construction
+     * for options that may not be set.
+     */
     function get($name, $default = null) {
         return $this->__isset($name) ? $this->__get($name) : $default;
+    }
+    
+    /**
+     * Setter.
+     * 
+     * Useful in Twig templates, where one cannot set properties for an object directly.
+     */
+    function set($name, $value) {
+        $this->__set($name, $value);
     }
     
     function __isset($name) {

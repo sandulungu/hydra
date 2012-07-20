@@ -19,7 +19,9 @@ namespace Hydra;
  * 
  * @property string $i18n__defaultLang
  * @property string $vendor__webDirs
+ * 
  * @property string $form__twigViews
+ * @property array form__coreTypes
  *
  * @property array  $app
  * @property array  $cookie
@@ -36,7 +38,7 @@ namespace Hydra;
  * @property array  $twig__options
  * @property array  $twig__dirs
  */
-class Config extends BaseConfig {
+class Config extends ArrayObject {
     
     /**
      * @var App 

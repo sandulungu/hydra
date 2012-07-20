@@ -22,12 +22,19 @@ abstract class Validator {
      */
     protected $_form;
 
-    // This one is public, as it is not fully known what exactly plugins will use options for.
-    var $options;
+    var $messages = array();
 
     function __construct(Form $form, array $options = array()) {
         $this->_form = $form;
-        $this->options = $options;
+        foreach ($options as $name => $value) {
+            if (property_exists($this, $name)) {
+                $this->$name =& $value;
+            }
+            else {
+                throw new \LogicException("Unsupported Validator option: $name.");
+            }
+        }
+        
     }
 
     function isValid($data) {

@@ -12,17 +12,16 @@
 
 namespace Hydra\Form;
 
-use Hydra\Form;
 use Hydra\App;
 
 /**
  * 
  * @property array|Traversable $choices
  */
-class SelectField extends Form {
+class SelectField extends Field {
     
     function __construct(App $app, array $options = array()) {
-        $this->defaultOptions['messages']['invalid_choices'] = 'Invalid choice(s): $choices.';
+        $this->messages['invalid_choices'] = 'Invalid choice(s): $choices.';
         
         // this option should be specified explicitly
         $this->defaultOptions['choices'] = null;
@@ -32,6 +31,7 @@ class SelectField extends Form {
 
     function service__choices() {
         $choices =& $this->options['choices'];
+        
         if ($choices instanceof \Closure) {
             $choices = $choices($this);
         }
@@ -39,7 +39,11 @@ class SelectField extends Form {
             $method = "form.choices.$choices";
             $choices = $this->$method($this);
         }
-        if ($choices && !is_array($choices) && !$choices instanceof \Traversable) {
+        
+        if (!$choices) {
+            throw new \LogicException("For 'list' or 'select' form fields 'choices' option is required and should countain at least an item.");
+        }
+        if (!is_array($choices) && !$choices instanceof \Traversable) {
             throw new \LogicException("Form choices should be an array or Traversable class.");
         }
         return $choices;

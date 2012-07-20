@@ -20,7 +20,7 @@ namespace Hydra;
  * @property string $hydra__token
  * @property string $hydra
  */
-class Cookie extends BaseConfig {
+class Cookie extends ArrayObject {
     
     /**
      * @var App 

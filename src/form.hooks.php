@@ -19,10 +19,38 @@ $hooks['app.config'][-1000][] = function (&$config) {
     $config['form.twigViews'] = array(
         'default' => 'form.html.twig',
     );
+    $config['form.coreTypes'] = array(
+        'subform',
+        'collection',
+        'textarea',
+        'hidden',
+        'checkbox',
+        'file',
+        'text',
+        'password',
+        'image',
+        'submit',
+        'color',
+        'date',
+        'datetime',
+        'datetime-local',
+        'email',
+        'month',
+        'number',
+        'range',
+        'search',
+        'tel',
+        'time',
+        'url',
+        'week',
+    );
 };
 
 // Form API entry point.
 $methods['app.form'][0] = function(App $app, array $options, Form $form = null) {
+    if (!$form) {
+        $options += array('type' => 'form');
+    }
     $app->hook('form.init', $options, $form);
     
     // Load form options. This is required for $form->type guessers to work properly.
@@ -39,26 +67,31 @@ $hooks['form.init'][0][] = function(array &$options, &$form, App $app) {
         if ($type == 'list' || $type == 'select') {
             $form = new Form\SelectField($app, $options);
         }
+        elseif ($type == 'form') {
+            $form = new Form\Form($app, $options);
+        }
     }
 };
 
 // Create a default form.
 $hooks['form.init'][1000][] = function(array &$options, &$form, App $app) {
     if (!$form) {
-        $form = new Form($app, $options);
+        if (!empty($options['type']) && !in_array($options['type'], $app->config->form__coreTypes)) {
+            throw new \LogicException("Unknown form type: {$options['type']}.");
+        }
+        $form = new Form\Field($app, $options);
     }
 };
 
 // Set template block names and some other low-level defaults, based on $form->behaviors.
-$hooks['form.options'][0][] = function(Form $form, array &$options) {
-    $twig_blocks =& $options['twigBlocks'];
+$hooks['form.options'][0][] = function(Form $form) {
+    $twig_blocks =& $form->twigBlocks;
     foreach ($form->behaviors as $behavior) {
         switch ($behavior) {
             
             // Core forms
             case 'form':
                 $twig_blocks += array('widget' => "form_widget");
-                $options += array('method' => 'POST');
                 break;
             case 'subform':
             case 'collection':
@@ -72,7 +105,7 @@ $hooks['form.options'][0][] = function(Form $form, array &$options) {
                 break;
             case 'hidden':
                 $form->children = false;
-                $options['errorBubble'] = true;
+                $form->errorBubble = true;
                 $twig_blocks += array('row' => 'widget', 'label' => false);
                 break;
             case 'checkbox':
@@ -81,7 +114,7 @@ $hooks['form.options'][0][] = function(Form $form, array &$options) {
                 break;
             case 'file':
                 if ($form->parentForm) {
-                    $form->parentForm->options['attributes']['enctype'] = "multipart/form-data";
+                    $form->parentForm->attributes['enctype'] = "multipart/form-data";
                 }
                 $form->children = false;
                 break;
@@ -113,36 +146,13 @@ $hooks['form.options'][0][] = function(Form $form, array &$options) {
             case 'list':
                 $twig_blocks += array('attributes' => 'list_attributes');
             case 'select':
-                if (!isset($options['choices'])) {
-                    throw new \LogicException("For 'list' or 'select' form fields 'choices' option is required.");
-                }
-                if (!isset($form->overridenOptions['multiple'])) {
-                    $options['multiple'] = is_array($form->data);
+                if (!isset($form->constructorOptions['multiple'])) {
+                    $form->multiple = is_array($form->data);
                 }
                 $twig_blocks += array('widget' => "{$form->type}_widget");
                 break;
         }
     }
-};
-
-// Default form type guesser.
-$hooks['form.type'][1000][] = function(Form $form) {
-    if ($form->hasChildren) {
-        if (!$form->parent) {
-            return 'form';
-        }
-        return is_array($form->data) && Utils::arrayIsNumeric($form->data) ? 'collection' : 'subform';
-    }
-    if (is_bool($form->data)) {
-        return 'checkbox';
-    }
-    if (is_int($form->data)) {
-        return 'number';
-    }
-    if (is_string($form->data) && strpos($form->data, "\n") !== false) {
-        return 'textarea';
-    }
-    return 'text';
 };
 
 // Default children guesser (supports plain objects and arrays).
@@ -188,7 +198,7 @@ $hooks['form.validate'][-1000][] = function(Form $form, &$data) {
         $method = "normalize__$form->dataType";
         $data = $form->app->$method($data);
     }
-    if ($form->options['required']) {
+    if ($form->required) {
         if (empty($data)) {
             $form->addError('required');
             return false;
@@ -221,7 +231,7 @@ $hooks['form.validate'][0][] = function(Form $form, &$data) {
 
     // Validate user choice(s).
     if ($data && $form instanceof Form\SelectField) {
-        $values = $form->options['multiple'] ? $data : array($data);
+        $values = $form->multiple ? $data : array($data);
         foreach ($form->choices as $k => $v) {
             if ($v instanceof \Traversable) {
                 $v = iterator_to_array($v);

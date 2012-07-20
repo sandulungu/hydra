@@ -56,7 +56,7 @@ $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotatio
         $pattern = rtrim($prefixes[$annotation['class']], '/') .'/'. ltrim($pattern, '/');
     }
     
-    $name = $defaults['%controller'] = $annotation['class'];
+    $name = $defaults['controller.class'] = $annotation['class'];
     $name .= "::{$annotation['method']}()";
     if (substr($annotation['method'], -6) != 'Action') {
         throw new \LogicException("All routed controller actions should be prefixed with 'Action'. Please rename $name.");

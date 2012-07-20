@@ -30,7 +30,7 @@ class Core {
     function __construct(array $config = array()) {
         $this->_config =& $config;
         $config += array(
-            'debug' => false,
+            'debug' => $_SERVER['SERVER_NAME'] == 'localhost',
             'register_exception_handler' => true,
             'register_error_handler' => true,
             'core_dir' => __DIR__ . '/../..',

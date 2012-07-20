@@ -2,7 +2,7 @@
 <label class="checkbox" for="{{ form.attributes['id'] }}">
     <input{{ form.render('attributes')|raw }}{% if form.webData %} checked{% endif %} type="checkbox" />
     {{ form['label'] }}
-    {% if form.options['required'] %}<span class="required">*</span>{% endif %}
+    {% if form.required %}<span class="required">*</span>{% endif %}
 </label>
 {% endblock %}
 
@@ -11,18 +11,18 @@
 {% endblock %}
 
 {% block select_widget %}
-<select{{ form.render('attributes')|raw }}{% if form.options['multiple'] %} multiple{% endif %}>
+<select{{ form.render('attributes')|raw }}{% if form.multiple %} multiple{% endif %}>
     {% for k,v in form.choices %}
     {% if v is iterable %}
     <optgroup label="{{ k }}">
         {% for k2,v2 in v %}
-        <option value="{{ k2 }}"{% if form.options['multiple'] and k2 in form.webData or not form.options['multiple'] and k2 == form.webData %} selected{% endif %}>
+        <option value="{{ k2 }}"{% if form.multiple and k2 in form.webData or not form.multiple and k2 == form.webData %} selected{% endif %}>
             {{ v2 }}
         </option>
         {% endfor %}
     </optgroup>
     {% else %}
-    <option value="{{ k }}"{% if form.options['multiple'] and k in form.webData or not form.options['multiple'] and k == form.webData %} selected{% endif %}>
+    <option value="{{ k }}"{% if form.multiple and k in form.webData or not form.multiple and k == form.webData %} selected{% endif %}>
         {{ v }}
     </option>
     {% endif %}
@@ -33,7 +33,7 @@
 {% block list_widget %}
 {% for k,v in form.choices %}
 <label class="checkbox" for="{{ form.attributes['id'] }}-{{ k }}">
-    <input{{ form.render('attributes', {k: k})|raw }} type="{{ form.options['multiple'] ? 'checkbox' : 'radio' }}" value="{{ k }}"{% if form.options['multiple'] and k in form.webData or not form.options['multiple'] and k == form.webData %} checked{% endif %} />
+    <input{{ form.render('attributes', {k: k})|raw }} type="{{ form.multiple ? 'checkbox' : 'radio' }}" value="{{ k }}"{% if form.multiple and k in form.webData or not form.multiple and k == form.webData %} checked{% endif %} />
     {{ v }}
 </label>
 {% endfor %}
@@ -45,22 +45,23 @@
 {% endblock %}
 
 {% block form_widget %}
-<form{{ form.render('attributes')|raw }} method="{{ form.options['method'] }}">
-    {%if form.options['method']|upper != 'GET' %}
+<form{{ form.render('attributes')|raw }} method="{{ form.method }}">
+    {%if form.method|upper != 'GET' %}
     <input name="{{ form.app.config['security']['token.param'] }}" value="{{ form.app['security.token'] }}" type="hidden" />
     {% endif %}
     <fieldset class="form">
         <legend>{{ form['label'] }}</legend>
         {{ block('subform_widget') }}
     </fieldset>
-    {{ block('form_actions') }}
+    {% if form.helpMessage %}
+    <div class="help-block">{{ form.helpMessage|raw }}</div>
+    {% endif %}
+    {%if form.submitButton %}
+    <div class="form-actions">
+        <button class="btn btn-primary">{{ form.submitButton }}</button>
+    </div>
+    {% endif %}
 </form>
-{% endblock %}
-
-{% block form_actions %}
-<div class="form-actions">
-    <button class="btn btn-primary">{{ form.options['submit']|default('Submit') }}</button>
-</div>
 {% endblock %}
 
 {% block collection_widget %}
@@ -89,8 +90,8 @@
     <div class="controls">
         {{ form.render('errors')|raw }}
         {{ form.render('widget')|raw }}
-        {% if form.options['help'] is defined %}
-        <span class="help-block">{{ form.options['help']|raw }}</span>
+        {% if form.helpMessage %}
+        <span class="help-block">{{ form.helpMessage|raw }}</span>
         {% endif %}
     </div>
 </div>
@@ -103,7 +104,7 @@
 {% block label %}
 <label class="control-label" for="{{ form.attributes['id'] }}">
     {{ form['label'] }}
-    {% if form.options['required'] %}<span class="required">*</span>{% endif %}
+    {% if form.required %}<span class="required">*</span>{% endif %}
 </label>
 {% endblock %}
 

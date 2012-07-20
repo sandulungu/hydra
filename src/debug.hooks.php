@@ -18,7 +18,7 @@ $hooks['app.routes'][0][] = function(App $app) {
     if ($app->core->debug) {
         return array(
             array('GET', 'hydra/debug/config', function(Request $request) {
-                return new Response\DataResponse($request, $request->app->config->all(), "Debug info » Configuration");
+                return new Response\DataResponse($request, $request->app->config->getArrayCopy(), "Debug info » Configuration");
             }),
             array('GET', 'hydra/debug/routes', function(Request $request) {
                 return new Response\DataResponse($request, $request->app->routes, "Debug info » Routes");

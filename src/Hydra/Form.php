@@ -31,7 +31,7 @@ namespace Hydra;
  * @property array $validators
  * @property array $behaviors
  * @property string $type
- * @property string $options
+ * @property array $options
  * @property string $dataType
  * @property string $label
  * @property string $name
@@ -39,36 +39,33 @@ namespace Hydra;
  * @property array $attributes
  * @property string|false $twigDefaultView
  */
-class Form extends Container {
-    
-    var $errors = array(), $overridenOptions;
+abstract class Form extends Container {
     
     /**
-     * Default form (shared) options.
+     * Default service values.
      */
     var $defaultOptions = array(
-        'type' => null, // service
-        'behaviors' => array(), // service
-        'name' => null, // service
-        'children' => null, // service
-        'multiple' => false,
-
-        'data' => null, // service
-        'dataClass' => null,
-        'dataType' => null, // service
-
-        // Validation options, can be safely changed in 'form.options' hook
-        'required' => false,
-        'errorBubble' => false,
-        'validators' => null, // service
-        'messages' => array(),
-
-        // View options, can be safely changed in 'form.options' hook
-        'label' => null, // service
-        'attributes' => array(), // service
-        'twigView' => null,
-        'twigBlocks' => array(),
+        'type' => null,
+        'behaviors' => array(),
+        'name' => null,
+        'children' => null,
+        'data' => null,
+        'dataType' => null,
+        'validators' => null,
+        'label' => null,
+        'attributes' => array(),
     );
+    
+    var $constructorOptions,
+        $errors = array(),
+        $multiple = false,
+        $dataClass,
+        $required = false,
+        $errorBubble = false, 
+        $messages = array(), 
+        $twigView = false, 
+        $twigBlocks = array(),
+        $helpMessage = '';
     
     /**
      * @var App
@@ -84,7 +81,7 @@ class Form extends Container {
 
     function __construct(App $app, array $options = array()) {
         $this->app = $app;
-        $this->overridenOptions = $options;
+        $this->constructorOptions = $options;
         parent::__construct('form');
     }
 
@@ -115,18 +112,18 @@ class Form extends Container {
         if (is_array($subform)) {
             $subform = $this->app->hook('form.init', $subform);
         }
-        if ($this->options['twigView'] && !isset($subform->overridenOptions['twigView'])) {
-            $subform->overridenOptions['twigView'] = $this->options['twigView'];
+        if ($this->twigView && !isset($subform->constructorOptions['twigView'])) {
+            $subform->constructorOptions['twigView'] = $this->twigView;
         }
         $subform->name = $name;
         $subform->parent = $this;
 
-        if (!isset($subform->overridenOptions['data']) && empty($subform->overridenOptions['dataClass'])) {
+        if (!isset($subform->constructorOptions['data']) && empty($subform->constructorOptions['dataClass'])) {
             if (is_array($this->data) && isset($this->data[$name])) {
-                $subform->overridenOptions['data'] =& $this->data[$name];
+                $subform->constructorOptions['data'] =& $this->data[$name];
             }
             elseif (is_object($this->data) && isset($this->data->$name)) {
-                $subform->overridenOptions['data'] =& $this->data->$name;
+                $subform->constructorOptions['data'] =& $this->data->$name;
             }
         }
         
@@ -139,15 +136,15 @@ class Form extends Container {
             return;
         }
         
-        if (isset($this->options['twigBlocks'][$block_name])) {
-            $block_name = $this->options['twigBlocks'][$block_name];
+        if (isset($this->twigBlocks[$block_name])) {
+            $block_name = $this->twigBlocks[$block_name];
         }
         if (!$block_name) {
             return;
         }
         
-        if ($this->options['twigView']) {
-            $template = $this->app->twig->loadTemplate($this->options['twigView']);
+        if ($this->twigView) {
+            $template = $this->app->twig->loadTemplate($this->twigView);
             if (!$template->hasBlock($block_name)) {
                 $template = null;
             }
@@ -170,32 +167,21 @@ class Form extends Container {
     function addError($message = 'invalid', array $params = array(), Validator $validator = null) {
         $this->_hasErrors = true;
                 
-        if (isset($this->options['messages'][$message])) {
-            $message = $this->options['messages'][$message];
+        if (isset($this->messages[$message])) {
+            $message = $this->messages[$message];
         }
-        elseif (isset($validator->options['messages'][$message])) {
-            $message = $this->options['messages'][$message];
+        elseif (isset($validator->messages[$message])) {
+            $message = $validator->messages[$message];
         }
         else {
             $message = Utils::humanize($message);
         }
         
         $form = $this;
-        while ($form->options['errorBubble'] && $form->parent) {
+        while ($form->errorBubble && $form->parent) {
             $form = $form->parent;
         }
         $form->errors[] = $this->app->translate($message, $params);
-    }
-    
-    function bindRequest(Request $request) {
-        if (empty($this->options['method'])) {
-            throw new \LogicException("A 'method' option should be set before binding a Form to a Request.");
-        }
-        $data = strtoupper($this->options['method']) == 'GET' ? $request->query : $request->data;
-        if (!isset($data[$this->name])) {
-            return false;
-        }
-        return $this->bind($data[$this->name]);
     }
     
     function bind($data, $validate = true) {
@@ -205,15 +191,50 @@ class Form extends Container {
     }
     
     function &service__options() {
-        $this->options = $this->overridenOptions + $this->defaultOptions;
-        return $this->app->hook('form.options', $this, $this->options);
+        
+        // Override class properties.
+        $this->options = array();
+        foreach($this->constructorOptions as $name => &$value) {
+            if (property_exists($this, $name)) {
+                $this->$name = $value;
+            } else {
+                $this->options[$name] = $value;
+            }
+        }
+        
+        // Process and validate options.
+        $this->options += $this->defaultOptions;
+        $this->app->hook('form.options', $this);
+        foreach($this->options as $name => &$value) {
+            if (!array_key_exists($name, $this->defaultOptions)) {
+                if (property_exists($this, $name)) {
+                    throw new \LogicException("Inside 'form.options' hook, Form object properties should be overridden directly and not through options array. Conflicting option: $name.");
+                }
+                throw new \LogicException("Unsupported Form option: $name.");
+            }
+            
+        }
+        return $this->options;
     }
-    
+        
     function service__type() {
-        if ($this->options['type']) {
+        if (!empty($this->options['type'])) {
             return $this->options['type'];
         }
-        return $this->app->hook('form.type', $this);
+        
+        if ($this->hasChildren) {
+            return is_array($this->data) && Utils::arrayIsNumeric($this->data) ? 'collection' : 'subform';
+        }
+        if (is_bool($this->data)) {
+            return 'checkbox';
+        }
+        if (is_int($this->data)) {
+            return 'number';
+        }
+        if (is_string($this->data) && strpos($this->data, "\n") !== false) {
+            return 'textarea';
+        }
+        return 'text';
     }
 
     function service__parentForm() {
@@ -312,8 +333,8 @@ class Form extends Container {
             }
             return $this->options['data'];
         }
-        if ($this->options['dataClass']) {
-            $dataClass = $this->options['dataClass'];
+        if ($this->dataClass) {
+            $dataClass = $this->dataClass;
             return new $dataClass;
         }
         return $data;
@@ -333,8 +354,8 @@ class Form extends Container {
     
     function service__attributes() {
         $attributes = $this->options['attributes'] + array(
-            'name' => $this->fullName . ($this->options['multiple'] ? '[]' : ''),
-            'id' => $this->parent ? 
+            'name' => $this->fullName . ($this->multiple ? '[]' : ''),
+            'id' => $this->parent ?
                 "{$this->parent->attributes['id']}-$this->name" : 
                 $this->name,
         );
