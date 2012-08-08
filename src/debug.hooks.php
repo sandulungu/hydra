@@ -19,23 +19,23 @@ if ($app->core->debug) {
         return array(
             array('GET', 'hydra/debug/config', function(Request $request) {
                 return new Response\DataResponse($request, $request->app->config->getArrayCopy(), "Debug info » Configuration");
-            }),
+            }, 'html|json'),
             array('GET', 'hydra/debug/routes', function(Request $request) {
                 return new Response\DataResponse($request, $request->app->routes, "Debug info » Routes");
-            }),
+            }, 'html|json'),
             array('GET', 'hydra/debug/env', function(Request $request) {
                 return new Response\DataResponse($request, $_ENV, "Debug info » Environment");
-            }),
+            }, 'html|json'),
             array('GET', 'hydra/debug/server', function(Request $request) {
                 return new Response\DataResponse($request, $_SERVER, "Debug info » Server options");
-            }),
+            }, 'html|json'),
             array('GET', 'hydra/debug/cookie', function(Request $request) {
                 return new Response\DataResponse($request, $_COOKIE, "Debug info » Cookies");
-            }),
+            }, 'html|json'),
             array('GET', 'hydra/debug/session', function(Request $request) {
                 $request->app->session; // Start session
                 return new Response\DataResponse($request, $_SESSION, "Debug info » Session");
-            }),
+            }, 'html|json'),
             array('GET', 'hydra/debug/phpinfo', function(Request $request) {
                 return function() { phpinfo(); };
             }),

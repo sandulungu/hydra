@@ -1,4 +1,7 @@
-{%- if callback is defined -%}
+{%- if callback is not defined -%}
+    {% set callback = app.normalize__JSONPCallback(request.query['callback']|default(null)) %}
+{%- endif -%}
+{%- if callback is not empty -%}
     {{ callback|raw }}({{ body|raw }})
 {%- else -%}
     {{ body|raw }}

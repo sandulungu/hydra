@@ -19,7 +19,7 @@
         }
         
         var next = function() {
-            $.get('{{ response.request.baseurl }}/hydra/batch/{{ id }}.json', function(response) {
+            $.get('{{ baseurl }}/hydra/batch/{{ id }}.json', function(response) {
                 if (response.html) {
                     $('<blockquote />').html(response.html).appendTo($line);
                 }

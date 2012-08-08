@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="{{ request.lang|default('en') }}">
     <head>
-        <title>{% block head_title title|default(response.app.config.app.title) %}</title>
+        <title>{% block head_title title|default(app.config.app.title) %}</title>
 
         {% block head_meta %}
         <meta charset="utf-8">
@@ -14,9 +14,9 @@
         <!-- Le styles -->
         {% block head_css %}
         <link href="//current.bootstrapcdn.com/bootstrap-v204/css/bootstrap-combined.min.css" rel="stylesheet">
-        {% for css in response.app.config['assets.css'] %}
+        {#% for css in app.config['assets.css'] %}
         <link href="{{ css }}" rel="stylesheet">
-        {% endfor %}
+        {% endfor %#}
         {% endblock %}
         <style>
             {%- block head_style -%}
@@ -51,9 +51,9 @@
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
-                    <a class="brand" href="{{ baseurl }}">{% block navbar_title response.app.config.app.title %}</a>
+                    <a class="brand" href="{{ baseurl }}">{% block navbar_title app.config.app.title %}</a>
                     {% block nav ''%}
-                    {% if response.app.core.debug %}
+                    {% if app.core.debug %}
                     <ul class="nav pull-right">
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Debug <b class="caret"></b></a>
@@ -108,9 +108,9 @@
         {% block scripts %}
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <script src="//current.bootstrapcdn.com/bootstrap-v204/js/bootstrap.min.js"></script>
-        {% for script in response.app.config['assets.js'] %}
+        {#% for script in app['assets.js'] %}
         <script src="{{ script }}"></script>
-        {% endfor %}
+        {% endfor %#}
         {% endblock %}
     </body>
 </html>

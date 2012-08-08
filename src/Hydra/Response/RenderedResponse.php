@@ -33,7 +33,7 @@ class RenderedResponse extends Response {
         );
         
         $this->view = 
-            $this->request->isMain && $this->request instanceof Request\HttpRequest && !$this->request->isAjax ? 
+            $this->format != 'html' || $this->request->isMain && $this->request instanceof Request\HttpRequest && !$this->request->isAjax ? 
             "default.$this->format.twig" : 
             "partial.$this->format.twig";
     }
@@ -43,6 +43,8 @@ class RenderedResponse extends Response {
             if ($this->view) {
                 $this->variables += array(
                     'response' => $this,
+                    'request' => $this->request,
+                    'app' => $this->app,
                 );
                 if ($this->request instanceof Request\HttpRequest) {
                     $this->variables += array(

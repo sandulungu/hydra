@@ -157,9 +157,10 @@ class App extends Container {
      * @param array $defaults
      * @return \Hydra\App
      */
-    function route($http_method, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {
-        if (!in_array($http_method, array('GET', 'POST', 'PUT', 'DELETE'))) {
-            throw new \DomainException("Http method should be one of: 'GET', 'POST', 'PUT', 'DELETE', but '$http_method' given in $name annotation.");
+    function route($http_method, $pattern, \Closure $callback, $requirements = array(), array $defaults = array()) {
+        if (!in_array($http_method, Action::$METHODS_ALLOWED)) {
+            $methods = implode("', '", Action::$METHODS_ALLOWED);
+            throw new \DomainException("Http method should be one of: '$methods', but '$http_method' given.");
         }
         $this->routes[] = array($http_method, $pattern, $callback, $requirements, $defaults);
         return $this;

@@ -43,3 +43,8 @@ $methods['app.normalize.string'][0] = function(App $app, $data) {
 $methods['app.normalize.safeString'][0] = function(App $app, $data) {
     return str_replace('<', '', $data);
 };
+
+// Prevent XSS attacks by checking JSONP callbacks for invalid characters.
+$methods['app.normalize.JSONPCallback'][0] = function(App $app, $data) {
+    return preg_match('/^[a-z][a-z0-9_]*$/i', $data) ? (string)$data : null;
+};

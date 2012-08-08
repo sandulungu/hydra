@@ -48,10 +48,18 @@ $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotatio
     
     $requirements = $defaults = array();
     @list($http_method, $pattern, $format, $json) = preg_split('/\s+/', $annotation['value'], 4);
+    
+    // Format is optional.
+    if ($format && $format{0} == '{') {
+        $format = null;
+        list($http_method, $pattern, $json) = preg_split('/\s+/', $annotation['value'], 3);
+    }
+    
     if ($json) {
         extract(json_decode($json, true));
     }
     
+    // Append Controller @route <prefix>.
     if (!empty($prefixes[$annotation['class']])) {
         $pattern = rtrim($prefixes[$annotation['class']], '/') .'/'. ltrim($pattern, '/');
     }
@@ -59,12 +67,13 @@ $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotatio
     $name = $defaults['controller.class'] = $annotation['class'];
     $name .= "::{$annotation['method']}()";
     if (substr($annotation['method'], -6) != 'Action') {
-        throw new \LogicException("All routed controller actions should be prefixed with 'Action'. Please rename $name.");
+        throw new \LogicException("All routed controller actions should be suffixed with 'Action'. Please rename $name.");
     }
     $defaults['action'] = substr($annotation['method'], 0 , -6);
     
-    if (!in_array($http_method, array('GET', 'POST', 'PUT', 'DELETE'))) {
-        throw new \DomainException("Http method should be one of: 'GET', 'POST', 'PUT', 'DELETE', but '$http_method' given in $name annotation.");
+    if (!in_array($http_method, Action::$METHODS_ALLOWED)) {
+        $methods = implode("', '", Action::$METHODS_ALLOWED);
+        throw new \DomainException("Http method should be one of: '$methods', but '$http_method' given in $name annotation.");
     }
     $requirements['method'] = $http_method;
     

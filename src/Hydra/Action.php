@@ -17,14 +17,19 @@ namespace Hydra;
  */
 abstract class Action {
     
-    var $name, $pattern, $params = array(); 
+    var $name, $pattern, $params = array();
+    
+    static $METHODS_ALLOWED = array('GET', 'POST', 'PUT', 'DELETE');
 
     /**
      * Tries to match the $request with a $pattern.
      * 
      * @return bool|Action On success return an Action instance.
      */
-    static function match(Request $request, $http_method, $pattern, \Closure $callback = null, array $requirements = array(), array $defaults = array()) {
+    static function match(Request $request, $http_method, $pattern, \Closure $callback = null, $requirements = array(), array $defaults = array()) {
+        if (is_string($requirements)) {
+            $requirements = array('format' => $requirements);
+        }
         $requirements += array('format' => 'html');
         if (($request->method == 'HEAD' ? 'GET' : $request->method) != $http_method) {
             return false;
@@ -55,8 +60,15 @@ abstract class Action {
                 throw new Exception\InvalidActionParamException("Route matched, but invalid value for '$name' param detected: $match.");
             }
         }
-        list($default_format) = explode('|', $requirements['format']);
-        $params += $defaults + array('format' => $default_format);
+        
+//        list($default_format) = explode('|', $requirements['format']);
+        $params += $defaults;
+        if (!isset($params['format'])) {
+            if (!preg_match("`^{$requirements['format']}$`", 'html')) {
+                return false;
+            }
+            $params['format'] = 'html';
+        }
         
         $name = Utils::sluggify($pattern, "/(:[a-z0-9_]+|[^a-z0-9$%])+/", 'strtolower', 'homepage');
         $name = str_replace('%', '$', $name) .'.'. strtolower($http_method);
