@@ -23,7 +23,8 @@ use Hydra\Request;
  * @property string $webroot
  * @property string $webhost
  * @property string $baseurl
- * @property bool   $https
+ * @property bool   $isHttps
+ * @property bool   $isAjax
  */
 class HttpRequest extends Request {
     
@@ -37,8 +38,12 @@ class HttpRequest extends Request {
     /**
      * @return bool True if the request is over SSL.
      */
-    function service__https() {
+    function service__isHttps() {
         return !empty($this->server['HTTPS']) && $this->server['HTTPS'] != 'off';
+    }
+    
+    function service__isAjax() {
+        return !empty($this->server['X_REQUESTED_WITH']) && $this->server['X_REQUESTED_WITH'] == 'XMLHttpRequest';
     }
     
     /**
@@ -52,9 +57,9 @@ class HttpRequest extends Request {
      * Get baseurl and webroot.
      */
     function service__baseurl() {
-        $url_rewritten = isset($_SERVER['REDIRECT_URL']);
-        $script = $_SERVER['SCRIPT_NAME'];
-        $uri = $_SERVER['REQUEST_URI'];
+        $url_rewritten = isset($this->server['REDIRECT_URL']);
+        $script = $this->server['SCRIPT_NAME'];
+        $uri = $this->server['REQUEST_URI'];
         if ($url_rewritten) {
             $uri_lowercase = mb_strtolower($uri);
             for($i = 0; $i < strlen($uri) && $i < strlen($script) && $uri_lowercase{$i} == $script{$i}; $i++) {}
@@ -76,9 +81,9 @@ class HttpRequest extends Request {
      * @return string Host URL, ex: https://example.com:8888 
      */
     function service__webhost() {
-        $proto = $this->https ? 'https' : 'http';
+        $proto = $this->isHttps ? 'https' : 'http';
         $port = $this->server['SERVER_PORT'];
-        $port = $port == 80 && !$this->https || $port == 443 && $this->https ? '' : ":$port";
+        $port = $port == 80 && !$this->isHttps || $port == 443 && $this->isHttps ? '' : ":$port";
         return "$proto://{$this->server['SERVER_NAME']}$port";
     }
 

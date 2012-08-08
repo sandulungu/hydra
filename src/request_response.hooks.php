@@ -12,6 +12,8 @@
 
 namespace Hydra;
 
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+
 // Apply registered routes.
 $hooks['request.route'][1000][] = function (Request $request) {
     foreach ($request->app->routes as $args) {
@@ -22,9 +24,15 @@ $hooks['request.route'][1000][] = function (Request $request) {
     }
 };
 
-// Check CRSF token.
+// Check CRSF token for Authenticated users.
 $hooks['request.dispatch'][-1000][] = function (Request $request, &$response, App $app) {
     if ($app->config->security['token.autocheck'] && !in_array($request->method, array('HEAD', 'GET'))) {
+        
+        // Anonymous users, Bots and web-service Consumers don't need this type of security.
+        if (!$app->user instanceof User\Authenticated) {
+            return;
+        }
+        
         $param = $app->config->security['token.param'];
         if (empty($request->data[$param])) {
             throw new Exception\InvalidTokenHttpException("Security token missing. All non-GET methods should post a 'token' parameter.");
@@ -64,56 +72,35 @@ $hooks['response.render'][1000][] = function (Response $response) {
 
 // Security related headers.
 $hooks['response.before_send'][-1000][] = function (Response $response) {
+    if ($response->statusCode != 200 && isset(SymfonyResponse::$statusTexts[$response->statusCode])) {
+        array_unshift($response->headers, sprintf('HTTP/1.1 %s %s', $response->statusCode, SymfonyResponse::$statusTexts[$response->statusCode]));
+    }
     if ($response->request->isMain) {
         $response->headers += $response->app->config->security['headers'];
     }
 };
 
-// Better exception output for JSON, JS and other non-HTML requests
-$hooks['app.exception'][1000][] = function(\Exception $ex, &$dummy, App $app) {
-    $request = reset($app->requests);
-    $format = null;
-    $debug = $app->core->debug;
-    
-    // Get format from path info
-    if ($request) {
-        $format = Utils::fileExt($request->path);
-    }
-    
-    // Get format from active route
-    if ($request && isset($request->params)) {
-        $format = $request->params['format'];
-    }
-    
-    // Get format from response
-    if ($request && $request->response) {
-        $response = $request->response;
-        if ($response->format) {
-            $format = $request->response->format;
-        }
+// Security related headers.
+$hooks['response.send'][1000][] = function (Response $response, &$content) {
+    echo $content;
+};
 
-        if (!empty($response->headers['Content-Type'])) {
-            $format_guess = \Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesser::getInstance()
-                ->guess($response->headers['Content-Type']);
-            if ($format_guess) {
-                $format = $format_guess;
+$hooks['response.send_headers'][1000][] = function (Response $response, &$headers) {
+    foreach($headers as $name => $value) {
+        if ($value) {
+            if (is_array($value)) {
+                $replace = true;
+                foreach ($value as $v) {
+                    header("$name: $v", $replace);
+                    $replace = false;
+                }
+            } 
+            elseif ($value === false) {
+                header_remove($name);
+            }
+            elseif (isset($value)) {
+                is_int($name) ? header($value, false) : header("$name: $value");
             }
         }
-    }
-    
-    // Return a valid JSON response in case of error
-    if ($format == 'json') {
-        if (!headers_sent()) {
-            header("Content-Type: application/json");
-        }
-        ob_end_clean();
-        echo $app->dump__json(array(
-            'error' => array(
-                'code' => $ex->getCode(),
-                'message' => $debug ? "$ex" : $ex->getMessage(),
-                'trace' => $debug ? $ex->getTraceAsString() : null,
-            ),
-        ));
-        return false;
     }
 };

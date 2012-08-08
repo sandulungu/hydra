@@ -18,50 +18,54 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 /**
  * Application singleton and main service container.
  * 
- * @property Config             $config
- * @property array              $session
- * @property Cookie             $cookie
- * @property User               $user
- * @property \Twig_Environment  $twig
- * @property \PDO               $pdo
- * @property \MongoDB           $mongodb
- * @property AnnotationsReader  $annotationsReader
- * @property string             $security__salt
- * @property string             $security__token
+ * @property Config            $config
+ * @property array             $session
+ * @property Cookie            $cookie
+ * @property User              $user
+ * @property \Twig_Environment $twig
+ * @property AnnotationsReader $annotationsReader
+ * 
+ * @property string $security__salt
+ * @property string $security__token
+ * 
+ * @property \MongoDB                  $mongodb
+ * @property \Doctrine\DBAL\Connection $doctrine
  * 
  * @property \Hydra\MimeType\MimeTypeGuesser          $mimetype__guesser
  * @property \Hydra\MimeType\ExtensionMimeTypeGuesser $mimetype__extensionGuesser
  * 
- * @property \Monolog\Logger    $monolog__main
- * @property \Monolog\Logger    $monolog__debug
+ * @property \Monolog\Logger $monolog__main
+ * @property \Monolog\Logger $monolog__debug
  * 
- * @method \Net\Curl\Curl      curl()
- * @method \Net\Curl\CurlMulti curl__multi()
+ * @method bool   run()
+ * @method mixed  cache($name, $value = null, $ttl = 0, $reset = null)
+ * @method mixed  config__persist($name, $value, $reset)
+ * @method string translate($string, array $params = array(), array $options = array())
  * 
- * @method bool     run()
- * @method mixed    cache($name, $value = null, $ttl = 0, $reset = null)
- * @method mixed    config__persist($name, $value, $reset)
- * @method string   translate($string, array $params = array(), array $options = array())
+ * @method mixed dump__json($data)
+ * @method mixed dump__html($data)
  * 
- * @method mixed    dump__json($data)
- * @method mixed    dump__html($data)
- * 
- * @method mixed    normalize__int($data)
- * @method mixed    normalize__float($data)
- * @method mixed    normalize__bool($data)
- * @method mixed    normalize__array($data)
- * @method mixed    normalize__string($data)
- * @method mixed    normalize__safeString($data)
- * 
- * @method \Hydra\Form form(array $options, Form $form = null)
- * @method \Hydra\App  route($http_method, $pattern, $callback, $requirements = array(), $defaults = array())
+ * @method mixed normalize__int($data)
+ * @method mixed normalize__float($data)
+ * @method mixed normalize__bool($data)
+ * @method mixed normalize__array($data)
+ * @method mixed normalize__string($data)
+ * @method mixed normalize__safeString($data)
  */
 class App extends Container {
     
+    /**
+     * A special value for $app->persist(..., $reset) that allows interactive updating of persistent data. 
+     */
     const PERSIST_RESET_USE_CALLBACK = 'callback';
     
     protected $_hooks = array(), $_hookFiles = array();
     var $requests = array();
+    
+    /**
+     * @var \Hydra\Request
+     */
+    var $mainRequest;
     
     /**
      * @var \Hydra\Core
@@ -145,6 +149,41 @@ class App extends Container {
     }
     
     /**
+     * Quick binding of routes.
+     * 
+     * @param string $http_method
+     * @param string $pattern
+     * @param \Closure $callback
+     * @param array $requirements
+     * @param array $defaults
+     * @return \Hydra\App
+     */
+    function route($http_method, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {
+        if (!in_array($http_method, array('GET', 'POST', 'PUT', 'DELETE'))) {
+            throw new \DomainException("Http method should be one of: 'GET', 'POST', 'PUT', 'DELETE', but '$http_method' given in $name annotation.");
+        }
+        $this->routes[] = array($http_method, $pattern, $callback, $requirements, $defaults);
+        return $this;
+    }
+    
+    /**
+     * Form API entry point.
+     * 
+     * @return \Hydra\Form 
+     */
+    function form(array $options, Form $form = null) {
+        if (!$form) {
+            $options += array('type' => 'form');
+        }
+        $this->hook('form.init', $options, $form);
+
+        // Load form options. This is required for $form->type guessers to work properly.
+        $form->options;
+
+        return $form;
+    }
+
+    /**
      * Renders a sub-request.
      */
     function render($path, $method = 'GET', array $query = array(), $data = null) {
@@ -156,10 +195,18 @@ class App extends Container {
      * 
      * @return Response
      */
-    function dispatch($path, $method = 'GET', $query = array(), $data = null) {
-        $request = new Request\HttpRequest($this, $path, $method, $query, $data);
+    function dispatch($path, $method = 'GET', $query = array(), $data = null, $server = array()) {
+        $request = new Request\HttpRequest($this, $path, $method, $query, $data, $server);
+        if (!$this->mainRequest) {
+            $this->isMain = true;
+            $this->mainRequest = $request;
+        }
+        
+        // Use a dispatcher stack to allow cross-request access
         $this->requests[] = $request;
         $response = $request->dispatch();
+        array_pop($this->requests);
+        
         return $response;
     }
     
@@ -275,6 +322,8 @@ class App extends Container {
     
     /**
      * Serves main request.
+     * 
+     * @return bool True if a response was sent succesfully.
      */
     protected function fallback__run() {
         if (!$_POST) {
@@ -288,9 +337,12 @@ class App extends Container {
             $data =& $_POST;
         }
 
-        $path = ltrim(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : @$_GET['path'], '/');
+        $path = '';
+        if (isset($_SERVER['PATH_INFO'])) {
+            $path = ltrim($_SERVER['PATH_INFO'], '/');
+        }
         
-        $response = $this->dispatch($path, $_SERVER['REQUEST_METHOD'], $_GET, $data);
+        $response = $this->dispatch($path, $_SERVER['REQUEST_METHOD'], $_GET, $data, $_SERVER);
         if ($response) {
             $response->send();
             return true;
@@ -299,7 +351,7 @@ class App extends Container {
     }
 
     /**
-     * Translation fallback used by application that don't need interface translation.
+     * Translation fallback used by applications that don't need interface translation.
      */
     protected function fallback__translate($string, array $params = array(), array $options = array()) {
         return Utils::formatString($string, $params);
@@ -330,7 +382,7 @@ class App extends Container {
      * 
      * @see \Hydra\Config
      */
-    protected function fallback__config__persist($name = null, $value = null, $reset = false) {
+    protected function fallback__config__persist($name = null, $value = null, $unset = false) {
         static $values;
         $filename = "config";
         
@@ -339,7 +391,7 @@ class App extends Container {
         }
         
         if ($name) {
-            if ($reset) {
+            if ($unset) {
                 unset($values[$name]);
             } else {
                 $values[$name] = $value;
@@ -376,7 +428,7 @@ class App extends Container {
     function service__user() {
         $session_key = $this->config->session['userKey'];
         if (!isset($this->session[$session_key])) {
-            $this->session[$session_key] = new User($this);
+            $this->session[$session_key] = $this->hook('app.user', $this);
         }
         return $this->session[$session_key];
     }
@@ -385,8 +437,7 @@ class App extends Container {
      * Session provider.
      */
     function &service__session() {
-        session_name($this->config['session']['name']);
-        session_start();
+        $this->hook('app.session.start', $this->config->session['name']);
         return $_SESSION;
     }
 
@@ -415,12 +466,12 @@ class App extends Container {
      * Generates CSRF protection token and caches it in a session cookie on the client-side.
      */
     function service__security__token() {
-        $token_cookie = $this->config->security['token.cookie'];
-        if (isset($this->cookie[$token_cookie])) {
-            return $this->cookie[$token_cookie];
+        $session_key = $this->config->security['token.sessionKey'];
+        if (isset($this->session[$session_key])) {
+            return $this->session[$session_key];
         }
         $token = $this->hash(mt_rand(), false, 1);
-        $this->cookie->set($token_cookie, $token, 0);
+        $this->session[$session_key] = $token;
         return $token;
     }
 

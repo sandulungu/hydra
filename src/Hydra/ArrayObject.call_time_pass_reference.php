@@ -12,10 +12,6 @@
 
 namespace Hydra;
 
-// We have to use this ugly hack because sometimes PHP really suxx.
-$error_reporting = error_reporting();
-error_reporting(0);
-
 /**
  * Base configuration class.
  */

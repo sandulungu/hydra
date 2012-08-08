@@ -27,7 +27,7 @@ namespace Hydra;
  * 
  * Method access syntax:
  *  - $someclass->method__name($params, ...)
- *  - $someclass['method:method.name']($params, ...) // this will work only on PHP 5.3.4 or later
+ *  - $someclass['method:method.name']($params, ...) // this will work on PHP 5.3.9 or later
  * 
  * Together with the hooking system, this forms Hydra's plugins architecture.
  */

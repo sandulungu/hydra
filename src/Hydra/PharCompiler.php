@@ -47,8 +47,9 @@ class PharCompiler {
             ->in(__DIR__.'/../../vendor/monolog/monolog/src')
             ->in(__DIR__.'/../../vendor/symfony/http-kernel/Symfony/Component/HttpKernel/Exception')
             ->in(__DIR__.'/../../vendor/symfony/http-foundation/Symfony/Component/HttpFoundation/File/MimeType')
+            ->in(__DIR__.'/../../vendor/doctrine/common/lib/Doctrine')
+            ->in(__DIR__.'/../../vendor/doctrine/dbal/lib/Doctrine')
         ;
-
         foreach ($finder as $file) {
             $this->addFile($phar, $file);
         }

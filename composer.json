@@ -1,8 +1,21 @@
 {
-    "name": "z7/hydra",
+    "name": "hydra/hydra",
     "type": "library",
-    "description": "Hydra micro-framework",
+    "description": "The cozy RESTfull PHP5.3 micro-framework.",
     "homepage": "http://z7.github.com/hydra",
+    "keywords": [
+        "microframework",
+        "framework",
+        "dependency injection",
+        "form builder",
+        "REST", 
+        "router",
+        "micro",
+        "lightweight",
+        "simple",
+        "Twig","Mongodb",
+        "MVC"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -15,7 +28,8 @@
         "twig/twig": "1.*",
         "symfony/http-kernel": "2.*",
         "symfony/finder": "2.*",
-        "monolog/monolog": "1.*"
+        "monolog/monolog": "1.*",
+        "doctrine/dbal": "2.*"
     },
     "autoload": {
         "psr-0" : {

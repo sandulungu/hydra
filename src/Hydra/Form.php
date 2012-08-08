@@ -157,6 +157,11 @@ abstract class Form extends Container {
         return $template->renderBlock($block_name, $context);
     }
     
+    /**
+     * Validates and optionally standartize a unsafe web value.
+     * 
+     * This will be usually called internally just before binding the actual value.
+     */
     function validate(&$data = null) {
         unset($this->valid);
         $this->errors = array();
@@ -184,6 +189,13 @@ abstract class Form extends Container {
         $form->errors[] = $this->app->translate($message, $params);
     }
     
+    /**
+     * Binds a new value to the form/field.
+     * 
+     * @param mixed $data
+     * @param bool $validate For internal use. Setting this to FALSE will only skin pre-bind validation.
+     * @return type 
+     */
     function bind($data, $validate = true) {
         $validate && $this->validate($data);
         $this->webData = $this->app->hook('form.bind', $this, $data);

@@ -14,6 +14,8 @@ namespace Hydra;
 
 use Hydra\Utils;
 
+// TODO: Bugfixes - Array() instead of empty and multi-list(select) values not binded
+
 // Default app setings.
 $hooks['app.config'][-1000][] = function (&$config) {
     $config['form.twigViews'] = array(
@@ -44,19 +46,6 @@ $hooks['app.config'][-1000][] = function (&$config) {
         'url',
         'week',
     );
-};
-
-// Form API entry point.
-$methods['app.form'][0] = function(App $app, array $options, Form $form = null) {
-    if (!$form) {
-        $options += array('type' => 'form');
-    }
-    $app->hook('form.init', $options, $form);
-    
-    // Load form options. This is required for $form->type guessers to work properly.
-    $form->options;
-    
-    return $form;
 };
 
 // Usage of custom form classes.

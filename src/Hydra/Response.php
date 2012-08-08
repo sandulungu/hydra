@@ -12,8 +12,6 @@
 
 namespace Hydra;
 
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-
 /**
  * HTTP Response holder. 
  */
@@ -51,8 +49,8 @@ class Response {
     function render($render_stream = true) {
         if ($render_stream && $this->content instanceof \Closure) {
             $this->app->hook('response.stream', $this);
-            ob_start();
             $callback = $this->content;
+            ob_start();
             $callback($this);
             $this->content = ob_get_clean();
         }
@@ -69,10 +67,11 @@ class Response {
         session_cache_limiter('');
         
         if ($ttl > 0) {
+            $headers["Cache-Control"] = null;
             $headers['Expires'] = gmdate(DATE_RFC2822, time() + $ttl);
         } else {
-            header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-            header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+            $headers["Cache-Control"] = "no-cache, must-revalidate"; // HTTP/1.1
+            $headers["Expires"] = "Mon, 7 May 2012 07:07:07 GMT"; // Date in the past
         }
         
         if ($send) {
@@ -83,20 +82,8 @@ class Response {
         return $this;
     }
     
-    protected function _sendHeaders($headers) {
-        foreach($headers as $header => $value) {
-            if ($value) {
-                if (is_array($value)) {
-                    $replace = true;
-                    foreach ($value as $v) {
-                        header("$header: $v", $replace);
-                        $replace = false;
-                    }
-                } else {
-                    header("$header: $value");
-                }
-            }
-        }
+    protected function _sendHeaders(&$headers) {
+        $this->app->hook('response.send_headers', $this, $headers);
     }
     
     function send() {
@@ -106,9 +93,6 @@ class Response {
         $this->render(false);
         
         // Send headers.
-        if ($this->statusCode != 200 && isset(SymfonyResponse::$statusTexts[$this->statusCode])) {
-            header(sprintf('HTTP/1.1 %s %s', $this->statusCode, SymfonyResponse::$statusTexts[$this->statusCode]));
-        }
         if ($this->headers) {
             $this->_sendHeaders($this->headers);
         }
@@ -116,11 +100,13 @@ class Response {
         // Streaming support.
         if ($this->content instanceof \Closure) {
             $this->app->hook('response.stream', $this);
+        }
+        if ($this->content instanceof \Closure) {
             $this->app->hook('response.send', $this);
             $callback = $this->content;
             $callback($this);
         } else {
-            echo $this->app->hook('response.send', $this, $this->content);
+            $this->app->hook('response.send', $this, $this->content);
         }
         
         return $this;

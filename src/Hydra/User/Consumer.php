@@ -10,6 +10,14 @@
  * @license     http://www.opensource.org/licenses/MIT MIT
  */
 
-namespace Hydra;
+namespace Hydra\User;
 
-// ...
+use Hydra\User;
+
+/**
+ * An authenticated webservice consumer.
+ * 
+ * Usually all consumers will be authenticated using OAuth2 or by using a secret key.
+ */
+class Consumer extends User {
+}

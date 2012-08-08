@@ -38,7 +38,6 @@ class Request extends Container {
         $this->data = $data;
         $this->method = $method;
         $this->path = $path;
-        $this->isMain = empty($app->requests);
         parent::__construct('request');
     }
     

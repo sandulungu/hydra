@@ -58,15 +58,6 @@ $methods['app.normalize.plugin_web_dir'][0] = function(App $app, $name) {
     return is_dir($dir) ? $dir : null;
 };
 
-// Application method for quick route binding.
-$methods['app.route'][0] = function(App $app, $http_method, $pattern, \Closure $callback, $requirements = array(), $defaults = array()) {
-    if (!in_array($http_method, array('GET', 'POST', 'PUT', 'DELETE'))) {
-        throw new \DomainException("Http method should be one of: 'GET', 'POST', 'PUT', 'DELETE', but '$http_method' given in $name annotation.");
-    }
-    $app->routes[] = array($http_method, $pattern, $callback, $requirements, $defaults);
-    return $app;
-};
-
 // Gets a list of registered routes.
 $services['app.routes'][0] = function (App $app) {
     $routes = $app->infoHook('app.routes', $app);

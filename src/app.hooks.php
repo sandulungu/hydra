@@ -37,7 +37,7 @@ $hooks['app.config'][-1000][] = function (&$config) {
     
     $config['app']['title'] = 'Hydra';
     
-    $config['security']['token.cookie'] = 'hydra.token';
+    $config['security']['token.sessionKey'] = 'token';
     $config['security']['token.autocheck'] = true;
     $config['security']['token.param'] = 'token';
     $config['security']['headers'] = array();
@@ -48,5 +48,18 @@ $hooks['app.config'][0][] = function (&$config, &$dummy, App $app) {
     $app_config_file = "{$app->core->app_dir}/config.php";
     if (file_exists($app_config_file)) {
         require $app_config_file;
+    }
+};
+
+// Start session.
+$hooks['app.session.start'][0][] = function ($session_name) {
+    session_name($session_name);
+    session_start();
+};
+
+// Create a default (anonymous) user object.
+$hooks['app.user'][0][] = function (App $app, &$user) {
+    if (!$user) {
+        $user = new User\Anonymous($app);
     }
 };

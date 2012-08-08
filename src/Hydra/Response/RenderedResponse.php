@@ -30,7 +30,10 @@ class RenderedResponse extends Response {
             'title' => $title,
             'body' => $body,
         );
-        $this->view = $this->request->isMain ? "default.$this->format.twig" : "partial.$this->format.twig";
+        $this->view = 
+            $this->request->isMain && $this->request instanceof Request\HttpRequest && !$this->request->isAjax ? 
+            "default.$this->format.twig" : 
+            "partial.$this->format.twig";
     }
     
     function render($render_stream = true) {

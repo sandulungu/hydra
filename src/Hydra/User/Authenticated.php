@@ -10,6 +10,12 @@
  * @license     http://www.opensource.org/licenses/MIT MIT
  */
 
-namespace Hydra;
+namespace Hydra\User;
 
-// TODO: Gettext translation support
+use Hydra\User;
+
+/**
+ * An authenticated user .
+ */
+class Authenticated extends User {
+}

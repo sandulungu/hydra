@@ -21,7 +21,7 @@ namespace Hydra;
  * Note however, that only the properties starting with "s__" 
  * (for instance intialized services with the "s." prefix) will be serialized.
  */
-class User extends Container implements \Serializable {
+abstract class User extends Container implements \Serializable {
     
     /**
      * @var App
@@ -32,9 +32,9 @@ class User extends Container implements \Serializable {
         $this->app = $app;
     }
     
-    function serialize () {
-        $properties = get_object_vars($object);
-        foreach ($properties as $name => $value) {
+    function serialize() {
+        $properties = get_object_vars($this);
+        foreach ($properties as $name => &$dummy) {
             if (substr($name{0}, 0, 3) !== 's__') {
                 unset($properties[$name]);
             }
@@ -42,7 +42,7 @@ class User extends Container implements \Serializable {
         return serialize($properties);
     }
     
-    function unserialize ($serialized) {
+    function unserialize($serialized) {
         parent::__construct();
         foreach (unserialize($serialized) as $name => $value) {
             $this->$name = $value;
