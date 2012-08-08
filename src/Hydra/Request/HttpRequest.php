@@ -38,25 +38,25 @@ class HttpRequest extends Request {
     /**
      * @return bool True if the request is over SSL.
      */
-    function service__isHttps() {
+    protected function service__isHttps() {
         return !empty($this->server['HTTPS']) && $this->server['HTTPS'] != 'off';
     }
     
-    function service__isAjax() {
+    protected function service__isAjax() {
         return !empty($this->server['X_REQUESTED_WITH']) && $this->server['X_REQUESTED_WITH'] == 'XMLHttpRequest';
     }
     
     /**
      * @return string Remote IP address.
      */
-    function service__clientIp() {
+    protected function service__clientIp() {
         return $this->server['SERVER_ADDR'];
     }
 
     /**
      * Get baseurl and webroot.
      */
-    function service__baseurl() {
+    protected function service__baseurl() {
         $url_rewritten = isset($this->server['REDIRECT_URL']);
         $script = $this->server['SCRIPT_NAME'];
         $uri = $this->server['REQUEST_URI'];
@@ -71,7 +71,7 @@ class HttpRequest extends Request {
         return $baseurl;
     }
     
-    function service__webroot() {
+    protected function service__webroot() {
         $this->webroot = null; // prevent recursion
         $this->baseurl;
         return $this->webroot;
@@ -80,7 +80,7 @@ class HttpRequest extends Request {
     /**
      * @return string Host URL, ex: https://example.com:8888 
      */
-    function service__webhost() {
+    protected function service__webhost() {
         $proto = $this->isHttps ? 'https' : 'http';
         $port = $this->server['SERVER_PORT'];
         $port = $port == 80 && !$this->isHttps || $port == 443 && $this->isHttps ? '' : ":$port";

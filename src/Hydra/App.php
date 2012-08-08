@@ -28,8 +28,8 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @property string $security__salt
  * @property string $security__token
  * 
- * @property \MongoDB                  $mongodb
- * @property \Doctrine\DBAL\Connection $doctrine
+ * @property \MongoDB $mongodb
+ * @property \PDO     $pdo
  * 
  * @property \Hydra\MimeType\MimeTypeGuesser          $mimetype__guesser
  * @property \Hydra\MimeType\ExtensionMimeTypeGuesser $mimetype__extensionGuesser
@@ -408,7 +408,7 @@ class App extends Container {
     /**
      * Custom runtime configuration support. Equivalent to Drupal's variables.
      */
-    function service__config() {
+    protected function service__config() {
         $app = $this;
         return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
             return $app->infoHook('app.config');
@@ -418,14 +418,14 @@ class App extends Container {
     /**
      * Cookies provider.
      */
-    function service__cookie() {
+    protected function service__cookie() {
         return new Cookie($this);
     }
 
     /**
      * (Current) User provider.
      */
-    function service__user() {
+    protected function service__user() {
         $session_key = $this->config->session['userKey'];
         if (!isset($this->session[$session_key])) {
             $this->session[$session_key] = $this->hook('app.user', $this);
@@ -441,14 +441,14 @@ class App extends Container {
         return $_SESSION;
     }
 
-    function service__annotationsReader() {
+    protected function service__annotationsReader() {
         return new AnnotationsReader();
     }
 
     /**
      * Generates security salt, then reuses it.
      */
-    function service__security__salt() {
+    protected function service__security__salt() {
         $filename = "{$this->core->data_dir}/security.salt";
         if (!file_exists($filename)) {
             $characterList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -465,7 +465,7 @@ class App extends Container {
     /**
      * Generates CSRF protection token and caches it in a session cookie on the client-side.
      */
-    function service__security__token() {
+    protected function service__security__token() {
         $session_key = $this->config->security['token.sessionKey'];
         if (isset($this->session[$session_key])) {
             return $this->session[$session_key];
@@ -478,7 +478,7 @@ class App extends Container {
     /**
      * Default mime-type guesser.
      */
-    function service__mimetype__guesser() {
+    protected function service__mimetype__guesser() {
         return new MimeType\MimeTypeGuesser;
     }
     
@@ -487,7 +487,7 @@ class App extends Container {
      * 
      * Used for setting default content type for main responses.
      */
-    function service__mimetype__extensionGuesser() {
+    protected function service__mimetype__extensionGuesser() {
         return new MimeType\ExtensionMimeTypeGuesser;
     }
     

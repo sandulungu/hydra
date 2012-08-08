@@ -29,7 +29,7 @@ class SelectField extends Field {
         parent::__construct($app, $options);
     }
 
-    function service__choices() {
+    protected function service__choices() {
         $choices =& $this->options['choices'];
         
         if ($choices instanceof \Closure) {

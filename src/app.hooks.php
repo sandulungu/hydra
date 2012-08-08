@@ -41,6 +41,18 @@ $hooks['app.config'][-1000][] = function (&$config) {
     $config['security']['token.autocheck'] = true;
     $config['security']['token.param'] = 'token';
     $config['security']['headers'] = array();
+
+    $config['mongodb'] = array(
+        'uri' => null,
+        'dbname' => 'hydra',
+    );
+
+    $config['pdo'] = array(
+        'dsn' => 'mysql:host=localhost;dbname=hydra;charset=utf8',
+        'setNamesUtf8' => true,
+        'username' => 'root',
+        'password' => '',
+    );
 };
 
 // Load app configuration options from config file.
@@ -62,4 +74,19 @@ $hooks['app.user'][0][] = function (App $app, &$user) {
     if (!$user) {
         $user = new User\Anonymous($app);
     }
+};
+
+// Default MongoDB service.
+$services['app.mongodb'][0] = function(App $app) {
+    $mongo = new \Mongo($app->config['mongodb']['uri']);
+    return $mongodb = $mongo->selectDB($app->config['mongodb']['dbname']);
+};
+
+// Default PDO service.
+$services['app.pdo'][0] = function(App $app) {
+    $pdo = new \PDO($app->config['pdo']['dsn'], $app->config['pdo']['username'], $app->config['pdo']['password']);
+    if ($app->config['pdo']['setNamesUtf8']) {
+        $pdo->exec('SET NAMES utf8');
+    }
+    return $pdo;
 };

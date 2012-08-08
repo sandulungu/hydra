@@ -53,7 +53,7 @@ class Request extends Container {
      * 
      * Multiplingual support should be implemented in an external service.
      */
-    function service__lang() {
+    protected function service__lang() {
         return $this->app->config->i18n__defaultLang;
     }
     
@@ -67,7 +67,7 @@ class Request extends Container {
     /**
      *  Match current path and get action.
      */
-    function service__action() {
+    protected function service__action() {
         $action = $this->app->hook('request.route', $this);
         if (!$action) {
             

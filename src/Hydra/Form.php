@@ -229,7 +229,7 @@ abstract class Form extends Container {
         return $this->options;
     }
         
-    function service__type() {
+    protected function service__type() {
         if (!empty($this->options['type'])) {
             return $this->options['type'];
         }
@@ -249,7 +249,7 @@ abstract class Form extends Container {
         return 'text';
     }
 
-    function service__parentForm() {
+    protected function service__parentForm() {
         $form = $this->parent;
         if (!$form) {
             return;
@@ -263,7 +263,7 @@ abstract class Form extends Container {
         return $form;
     }
     
-    function service__behaviors() {
+    protected function service__behaviors() {
         $behaviors = array(-1 => $this->type);
         if ($this->options['behaviors']) {
             $behaviors += $this->options['behaviors'];
@@ -271,7 +271,7 @@ abstract class Form extends Container {
         return $behaviors;
     }
 
-    function service__dataType() {
+    protected function service__dataType() {
         if (isset($this->options['dataType'])) {
             return $this->options['dataType'];
         }
@@ -293,20 +293,20 @@ abstract class Form extends Container {
         }
     }
     
-    function service__label() {
+    protected function service__label() {
         if (isset($this->options['label'])) {
             return $this->options['label'];
         }
         return Utils::humanize($this->name);
     }
 
-    function service__twigDefaultView() {
+    protected function service__twigDefaultView() {
         return isset($this->app->config->form__twigViews[$this->type]) ?
             $this->app->config->form__twigViews[$this->type] :
             $this->app->config->form__twigViews['default'];
     }
 
-    function service__children() {
+    protected function service__children() {
         $children = $this->options['children'];
         $this->app->hook('form.children', $this, $children);
         
@@ -323,7 +323,7 @@ abstract class Form extends Container {
         return $children;
     }
 
-    function service__hasChildren() {
+    protected function service__hasChildren() {
         // not sure what to return in case of empty array (may have children, but currently doesn't)
         return (bool)$this->children;
     }
@@ -352,7 +352,7 @@ abstract class Form extends Container {
         return $data;
     }
     
-    function service__name() {
+    protected function service__name() {
         $name = $this->options['name'];
         if (!$name) {
             $name = strtolower(str_replace('\\', '_', get_class($this)));
@@ -360,11 +360,11 @@ abstract class Form extends Container {
         return $name;
     }
     
-    function service__fullName() {
+    protected function service__fullName() {
         return $this->parent ? "{$this->parent->fullName}[$this->name]" : $this->name;
     }
     
-    function service__attributes() {
+    protected function service__attributes() {
         $attributes = $this->options['attributes'] + array(
             'name' => $this->fullName . ($this->multiple ? '[]' : ''),
             'id' => $this->parent ?
@@ -374,7 +374,7 @@ abstract class Form extends Container {
         return array_filter($attributes);
     }
     
-    function service__validators() {
+    protected function service__validators() {
         $validators = $this->options['validators'];
         $this->app->hook('form.validators', $this, $validators);
         if (!is_array($validators)) {
@@ -405,7 +405,7 @@ abstract class Form extends Container {
         return $validators;
     }
     
-    function service__valid() {
+    protected function service__valid() {
         if ($this->hasChildren) {
             foreach ($this->children as $subform) {
                 if (!$subform->valid) {
