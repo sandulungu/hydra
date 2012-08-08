@@ -30,8 +30,10 @@
         "php": ">=5.3",
         "twig/twig": "1.*",
         "symfony/http-kernel": "2.*",
-        "symfony/finder": "2.*",
         "monolog/monolog": "1.*"
+    },
+    "require-dev": {
+        "symfony/finder": "2.*",
     },
     "autoload": {
         "psr-0" : {
