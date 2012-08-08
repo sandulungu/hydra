@@ -57,15 +57,3 @@ $methods['app.normalize.plugin_web_dir'][0] = function(App $app, $name) {
     $dir = "{$app->core->app_dir}/plugins/$name/web";
     return is_dir($dir) ? $dir : null;
 };
-
-// Gets a list of registered routes.
-$services['app.routes'][0] = function (App $app) {
-    $routes = $app->infoHook('app.routes', $app);
-
-    // No home route defined? Show an information page.
-    $routes[] = array('GET', '/', function() {
-        return 'Please define your routes in <strong>web/index.php</strong> or create a controller in <strong>app/src/App/Controller/</strong> folder.';
-    });
-    
-    return $routes;
-};

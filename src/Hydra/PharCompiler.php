@@ -41,29 +41,28 @@ class PharCompiler {
             ->notName('PharCompiler.php')
             ->notName('ide_helper.php')
             ->exclude('Tests')
-            ->in(__DIR__.'/..')
-            ->in(__DIR__.'/../../views')
-            ->in(__DIR__.'/../../vendor/twig/twig/lib')
-            ->in(__DIR__.'/../../vendor/monolog/monolog/src')
-            ->in(__DIR__.'/../../vendor/symfony/http-kernel/Symfony/Component/HttpKernel/Exception')
-            ->in(__DIR__.'/../../vendor/symfony/http-foundation/Symfony/Component/HttpFoundation/File/MimeType')
-            ->in(__DIR__.'/../../vendor/doctrine/common/lib/Doctrine')
-            ->in(__DIR__.'/../../vendor/doctrine/dbal/lib/Doctrine')
+            ->in('src')
+            ->in('views')
+            ->in('../../twig/twig/lib')
+            ->in('../../monolog/monolog/src')
+            ->in('../../symfony/http-kernel/Symfony/Component/HttpKernel/Exception')
+            ->in('../../symfony/http-foundation/Symfony/Component/HttpFoundation/File/MimeType')
+            ->in('../../symfony/http-foundation/Symfony/Component/HttpFoundation/File/Exception')
         ;
         foreach ($finder as $file) {
             $this->addFile($phar, $file);
         }
 
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/symfony/http-foundation/Symfony/Component/HttpFoundation/HeaderBag.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/symfony/http-foundation/Symfony/Component/HttpFoundation/Response.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/symfony/http-foundation/Symfony/Component/HttpFoundation/ResponseHeaderBag.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/symfony/http-kernel/Symfony/Component/HttpKernel/Debug/ErrorHandler.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/symfony/http-kernel/Symfony/Component/HttpKernel/Debug/ExceptionHandler.php'));
+        $this->addFile($phar, new \SplFileInfo('../../symfony/http-foundation/Symfony/Component/HttpFoundation/HeaderBag.php'));
+        $this->addFile($phar, new \SplFileInfo('../../symfony/http-foundation/Symfony/Component/HttpFoundation/Response.php'));
+        $this->addFile($phar, new \SplFileInfo('../../symfony/http-foundation/Symfony/Component/HttpFoundation/ResponseHeaderBag.php'));
+        $this->addFile($phar, new \SplFileInfo('../../symfony/http-kernel/Symfony/Component/HttpKernel/Debug/ErrorHandler.php'));
+        $this->addFile($phar, new \SplFileInfo('../../symfony/http-kernel/Symfony/Component/HttpKernel/Debug/ExceptionHandler.php'));
         
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/autoload.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/ClassLoader.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_namespaces.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_classmap.php'));
+        $this->addFile($phar, new \SplFileInfo('../../autoload.php'));
+        $this->addFile($phar, new \SplFileInfo('../../composer/ClassLoader.php'));
+        $this->addFile($phar, new \SplFileInfo('../../composer/autoload_namespaces.php'));
+        $this->addFile($phar, new \SplFileInfo('../../composer/autoload_classmap.php'));
 
         $phar->setStub($this->getStub());
         $phar->stopBuffering();
@@ -72,7 +71,7 @@ class PharCompiler {
 
     protected function addFile($phar, $file, $strip = true)
     {
-        $path = str_replace(dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR, '', $file->getRealPath());
+        $path = str_replace(dirname(dirname(dirname(dirname(__DIR__)))).DIRECTORY_SEPARATOR, '', $file->getRealPath());
         $content = file_get_contents($file);
         if ($strip) {
             $content = self::stripWhitespace($content);
@@ -96,7 +95,7 @@ class PharCompiler {
  */
 
 Phar::mapPhar('hydra.phar');
-return require_once 'phar://hydra.phar/vendor/autoload.php';
+return require_once 'phar://hydra.phar/autoload.php';
 
 __HALT_COMPILER();
 EOF;

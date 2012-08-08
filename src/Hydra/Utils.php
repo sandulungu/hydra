@@ -41,7 +41,6 @@ class Utils {
     /**
      *
      * @param type $filename
-     * @param bool $allow_empty_name If TRUE 
      * @return string File extension or NULL if the file has no extension
      */
     static function fileExt($filename) {

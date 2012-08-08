@@ -14,7 +14,7 @@
  * Phar compiler
  */
 
-$autoloader = require_once 'vendor/autoload.php';
+$autoloader = require_once '../../autoload.php';
 
 $compiler = new Hydra\PharCompiler();
 $compiler->compile();

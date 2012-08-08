@@ -75,18 +75,3 @@ $hooks['app.user'][0][] = function (App $app, &$user) {
         $user = new User\Anonymous($app);
     }
 };
-
-// Default MongoDB service.
-$services['app.mongodb'][0] = function(App $app) {
-    $mongo = new \Mongo($app->config['mongodb']['uri']);
-    return $mongodb = $mongo->selectDB($app->config['mongodb']['dbname']);
-};
-
-// Default PDO service.
-$services['app.pdo'][0] = function(App $app) {
-    $pdo = new \PDO($app->config['pdo']['dsn'], $app->config['pdo']['username'], $app->config['pdo']['password']);
-    if ($app->config['pdo']['setNamesUtf8']) {
-        $pdo->exec('SET NAMES utf8');
-    }
-    return $pdo;
-};

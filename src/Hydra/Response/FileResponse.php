@@ -15,6 +15,7 @@ namespace Hydra\Response;
 use Hydra\Request;
 use Hydra\Response;
 use Hydra\Utils;
+use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 
 /**
  * Webservice response holder.
@@ -39,10 +40,13 @@ class FileResponse extends Response {
 
             // Try to guess Content-Type
             if (!$this->isPhp) {
-                $this->headers['Content-Type'] = $request->app->mimetype__guesser->guess($filename);
+                $this->headers['Content-Type'] = MimeTypeGuesser::getInstance()->guess($filename);
             } 
             elseif ($request->app->config->response['guessPhpContentType']) {
-                $this->headers['Content-Type'] = $request->app->mimetype__extensionGuesser->guess(substr($filename, 0, -4));
+                $ext = Utils::fileExt(substr($filename, 0, -4));
+                if (isset($request->app->mimetypes[$ext])) {
+                    $this->headers['Content-Type'] = $request->app->mimetypes[$ext];
+                }
             }
         }
         

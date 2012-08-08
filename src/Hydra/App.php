@@ -24,19 +24,18 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @property User              $user
  * @property \Twig_Environment $twig
  * @property AnnotationsReader $annotationsReader
- * 
+ *
+ * @property array $mimetypes
+ *
  * @property string $security__salt
  * @property string $security__token
- * 
+ *
  * @property \MongoDB $mongodb
  * @property \PDO     $pdo
- * 
- * @property \Hydra\MimeType\MimeTypeGuesser          $mimetype__guesser
- * @property \Hydra\MimeType\ExtensionMimeTypeGuesser $mimetype__extensionGuesser
- * 
+ *
  * @property \Monolog\Logger $monolog__main
  * @property \Monolog\Logger $monolog__debug
- * 
+ *
  * @method bool   run()
  * @method mixed  cache($name, $value = null, $ttl = 0, $reset = null)
  * @method mixed  config__persist($name, $value, $reset)
@@ -198,7 +197,7 @@ class App extends Container {
     function dispatch($path, $method = 'GET', $query = array(), $data = null, $server = array()) {
         $request = new Request\HttpRequest($this, $path, $method, $query, $data, $server);
         if (!$this->mainRequest) {
-            $this->isMain = true;
+            $request->isMain = true;
             $this->mainRequest = $request;
         }
         
@@ -476,19 +475,45 @@ class App extends Container {
     }
 
     /**
-     * Default mime-type guesser.
+     * Default MongoDB service.
      */
-    protected function service__mimetype__guesser() {
-        return new MimeType\MimeTypeGuesser;
+    protected function service__mongodb() {
+        $mongo = new \Mongo($this->config['mongodb']['uri']);
+        return $mongodb = $mongo->selectDB($this->config['mongodb']['dbname']);
     }
-    
+
     /**
-     * Extension-based mime-type guesser.
-     * 
-     * Used for setting default content type for main responses.
+     * Default PDO service.
      */
-    protected function service__mimetype__extensionGuesser() {
-        return new MimeType\ExtensionMimeTypeGuesser;
+    protected function service__pdo() {
+        $pdo = new \PDO($this->config['pdo']['dsn'], $this->config['pdo']['username'], $this->config['pdo']['password']);
+        if ($this->config['pdo']['setNamesUtf8']) {
+            $pdo->exec('SET NAMES utf8');
+        }
+        return $pdo;
+    }
+
+    /**
+     * Gets a list of registered routes.
+     */
+    protected function service__routes() {
+        $routes = $this->infoHook('app.routes', $this);
+
+        // No home route defined? Show an information page.
+        $routes[] = array('GET', '/', function() {
+            return 'Please define your routes in <strong>web/index.php</strong> or create a controller in <strong>app/src/App/Controller/</strong> folder.';
+        });
+
+        return $routes;
     }
     
+    // Register Twig service.
+    protected function service__twig() {
+        $loader = new \Twig_Loader_Filesystem($this->config['twig.dirs']);
+        $options = $this->config['twig.options'];
+        if (!is_dir($options['cache'])) {
+            mkdir($options['cache']);
+        }
+        return new \Twig_Environment($loader, $options);
+    }
 }

@@ -26,10 +26,12 @@ class RenderedResponse extends Response {
     
     function __construct(Request $request, $title = null, $body = null) {
         parent::__construct($request);
+        
         $this->variables = array(
             'title' => $title,
             'body' => $body,
         );
+        
         $this->view = 
             $this->request->isMain && $this->request instanceof Request\HttpRequest && !$this->request->isAjax ? 
             "default.$this->format.twig" : 

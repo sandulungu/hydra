@@ -37,13 +37,3 @@ $hooks['response.render'][0][] = function (Response\RenderedResponse $response) 
         return $response->app->twig->render($response->view, $response->variables);
     }
 };
-
-// Register Twig service.
-$services['app.twig'][0] = function(App $app) {
-    $loader = new \Twig_Loader_Filesystem($app->config['twig.dirs']);
-    $options = $app->config['twig.options'];
-    if (!is_dir($options['cache'])) {
-        mkdir($options['cache']);
-    }
-    return new \Twig_Environment($loader, $options);
-};
