@@ -16,6 +16,9 @@
         "Twig","Mongodb",
         "MVC"
     ],
+    "replace": {
+        "z7/hydra": "self.version"
+    },
     "license": "MIT",
     "authors": [
         {
