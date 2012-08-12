@@ -21,12 +21,59 @@ class Html {
     
     static $_objects = array();
     
-    static function dump($data, $indent = 0) {
-        $em = $strong = false;
+    static function table($data) {
+        $headers = array();
+        $rows = is_object($data) ? get_object_vars($data) : $data;
+        if (!$rows || !is_array($rows)) {
+            return self::dump($data);
+        }
+        
+        foreach ($rows as &$row) {
+            if (is_object($row)) {
+                $row = get_object_vars($row);
+            }
+            elseif (!is_array($row)) {
+                $row = array($row);
+            }
+            $headers += $row;
+        }
+        $numeric_cols = Utils::arrayIsNumeric($headers);
+        $headers = array_keys($headers);
+        $numeric_rows = Utils::arrayIsNumeric($rows);
+        
+        $table = array();
+        if (!$numeric_cols) {
+            foreach ($headers as $header) {
+                if (!is_int($header)) {
+                    $value = self::dump($header, 0);
+                    $table[-1][$header] = "<th>$value</th>";
+                }
+            }
+        }
+        foreach ($rows as $key => $row) {
+            if (!$numeric_rows) {
+                if (!is_int($key)) {
+                    $value = self::dump($key, 0);
+                    $table[$key][-1] = "<th>$value</th>";
+                }
+            }
+            foreach ($headers as $header) {
+                $table[$key][$header] =  array_key_exists($header, $row) ? 
+                        '<td>' . self::dump($row[$header], 0) . '</td>' : '<td></td>';
+            }
+        }
+        $table = implode("</tr>\n<tr>", array_map(function($row) { return implode("", $row); }, $table));
+        return "<table class='table table-striped table-bordered dump'><tr>$table</tr></table>";
+    }
+    
+    static function dump($data, $indent = null) {
+        $em = false;
+        $type = 'unknown';
         $numeric = true;
-        $prefix = str_repeat("\t", $indent);
+        $prefix = $indent > 0 ? str_repeat("\t", $indent) : '';
         
         if (is_object($data)) {
+            $type = 'object';
             if ($data instanceof \Closure) {
                 $data = 'Closure';
                 $em = true;
@@ -47,6 +94,9 @@ class Html {
         }
         
         if (is_array($data)) {
+            if ($type == 'unknown') {
+                $type = 'array';
+            }
             $lines = array();
             if ($numeric) {
                 $numeric = Utils::arrayIsNumeric($data);
@@ -66,37 +116,44 @@ class Html {
             }
         }
         else if (is_bool($data)) {
+            $type = 'bool';
             $data = $data ? 'TRUE' : 'FALSE';
             $em = true;
         }
         elseif ($data === null) {
+            $type = 'null';
             $data = 'NULL';
             $em = true;
         }
         elseif (is_int($data)) {
-            $em = $strong = true;
+            $type = 'int';
+            $em = true;
         }
         elseif (is_float($data)) {
+            $type = 'float';
             $em = true;
         }
         elseif (is_resource($data)) {
+            $type = 'resource';
             $data = 'RESOURCE';
             $em = true;
         }
         elseif (is_string($data)) {
+            if ($type == 'unknown') {
+                $type = 'string';
+            }
+            $data = Utils::htmlentities($data);
             if (preg_match('`^https?://[^\s]+$`', $data)) {
-                $data = Utils::htmlentities($data);
                 $data = "<a href='$data'>$data</a>";
             }
         }
         
         if ($em) {
-            $data = "<em>$data</em>";
+            $data = "<em class='dump-$type'>$data</em>";
+        } else {
+            $data = "<span class='dump-$type'>$data</span>";
         }
-        if ($strong) {
-            $data = "<strong>$data</strong>";
-        }
-        if ($indent == 0) {
+        if ($indent === null) {
             self::$_objects = array();
             $data = "<div class='dump'>$data</div>";
         }
