@@ -36,7 +36,7 @@ abstract class Action {
         }
                 
         $types = array('format' => 'safeString');
-        $format_preg = substr($pattern, -1) == '/' ? '' : "(?:\.(?P<format>{$requirements['format']}))?";
+        $format_preg = substr($pattern, -1) == '/' ? '/?' : "(?:\.(?P<format>{$requirements['format']}))?";
         
         $preg = preg_replace_callback('/[%$]([A-Za-z0-9_]+)(?::([A-Za-z0-9_]+))?(\*)?/', function($matches) use ($requirements, &$types) {
             $name = $matches[1];
@@ -44,7 +44,7 @@ abstract class Action {
             $chars = empty($matches[3]) ? '[^/]' : '.';
             return empty($requirements[$name]) ? "(?P<$name>$chars+?)" : "(?P<$name>{$requirements[$name]})";
         }, strtr(trim($pattern, '/'), array('.' => '\.')));
-        
+
         if (!preg_match("`^$preg$format_preg$`", $request->path, $matches)) {
             return false;
         }

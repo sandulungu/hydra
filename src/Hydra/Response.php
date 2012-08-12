@@ -37,11 +37,14 @@ class Response {
         $this->headers =& self::$_headers;
         
         // Set Content-Type header
-        // Note: MimeTypeGuesser is a heavy class, so don't load it unnecessary
         $this->format = $request->params['format'];
-        if ($request->isMain && $this->format != 'html' && empty($this->headers['Location']) && empty($this->headers['Content-Type'])) {
+        if ($request->isMain && empty($this->headers['Location']) && empty($this->headers['Content-Type'])) {
             if (isset($request->app->mimetypes[$this->format])) {
-                $this->headers['Content-Type'] = $request->app->mimetypes[$this->format];
+                $content_type = $request->app->mimetypes[$this->format];
+                if (preg_match('/text|json|xml/', $content_type)) {
+                    $content_type .= '; charset=UTF-8';
+                }
+                $this->headers['Content-Type'] = $content_type;
             }
         }
                 

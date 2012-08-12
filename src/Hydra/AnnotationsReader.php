@@ -72,12 +72,12 @@ class AnnotationsReader extends Container {
         return $annotations;
     }
     
-    protected function _parseDocComment($doc_comment, $filter, array $defaults = array()) {
+    protected function _parseDocComment($doc_comment, array $filter = array(), array $defaults = array()) {
         $self = $this;
         return array_filter(array_map(function($line) use ($filter, $defaults, $self) {
-            if ($line && preg_match('/^\s*\*\s*@[a-z]/i', $line)) {
-                $line = preg_replace('/^\s*\*\s*@/i', '', $line);
-                list ($name, $value) = explode(' ', $line, 2);
+            if ($line && preg_match('/^\s*\*?\s*@[a-z]/i', $line)) {
+                $line = preg_replace('/^\*\s*@/i', '', trim($line));
+                @list ($name, $value) = explode(' ', $line, 2);
                 if (!$filter || in_array($name, $filter)) {
                     $annotation = array(
                         'name' => $name,

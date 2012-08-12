@@ -329,9 +329,10 @@ class App extends Container {
         if (!$_POST) {
             $data = file_get_contents('php://input');
             if ($data) {
-                $data = json_decode($data);
-            } else {
-                $data = null;
+                $decoded = json_decode($data, true);
+                if ($decoded) {
+                    $data = $decoded;
+                }
             }
         } else {
             $data =& $_POST;

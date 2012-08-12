@@ -12,6 +12,8 @@
 
 namespace Hydra;
 
+use Symfony\Component\HttpKernel\Exception\HttpException;
+
 if ($app->core->debug) {
     $start = microtime(true);
 
@@ -108,28 +110,29 @@ $hooks['app.exception'][1000][] = function(\Exception $ex) use ($app) {
         if ($response->format) {
             $format = $request->response->format;
         }
-
-        if (!empty($response->headers['Content-Type'])) {
-            $format_guess = \Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesser::getInstance()
-                ->guess($response->headers['Content-Type']);
-            if ($format_guess) {
-                $format = $format_guess;
-            }
-        }
     }
     
     // Return a valid JSON response in case of error
     if ($format == 'json') {
         if (!headers_sent()) {
-            header("Content-Type: application/json");
+            header("Content-Type: application/json; charset=UTF-8");
         }
         ob_end_clean();
-        echo $app->dump__json(array(
-            'error' => array(
-                'code' => $ex->getCode(),
-                'message' => $debug ? "$ex" : $ex->getMessage(),
+        $error = array(
+            'statusCode' => $ex instanceof HttpException ? $ex->getStatusCode() : 500,
+            'code' => $ex->getCode(),
+            'message' => $ex->getMessage(),
+        );
+        if ($debug) {
+            $error += array(
+                'file' => $ex->getFile(),
+                'line' => $ex->getLine(),
+                'class' => get_class($ex),
                 'trace' => $debug ? $ex->getTraceAsString() : null,
-            ),
+            );
+        }
+        echo $app->dump__json(array(
+            'error' => $error,
         ));
         return false;
     }
