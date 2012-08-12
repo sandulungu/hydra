@@ -15,7 +15,7 @@ namespace Hydra;
 mb_internal_encoding("UTF-8"); // We should never-ever have to change this.
 
 // Default app setings.
-$hooks['app.config'][-1000][] = function (&$config) {
+$hooks['app.config'][-1000][] = function (App $app, &$config) {
     $config['i18n.defaultLang'] = 'en';
     $config['vendor.webDirs'] = array();
     
@@ -24,7 +24,7 @@ $hooks['app.config'][-1000][] = function (&$config) {
     $config['response']['renderString'] = true;
     
     $config['session']['name'] = 'hydra';
-    $config['session']['userKey'] = 'user';
+    $config['session']['section'] = 'hydra';
     
     $config['cookie']['expiresIn'] = 60*60*24*365; // 1 year
     $config['cookie']['path'] = null;
@@ -37,17 +37,16 @@ $hooks['app.config'][-1000][] = function (&$config) {
     
     $config['app']['title'] = 'Hydra';
     
-    $config['security']['token.sessionKey'] = 'token';
     $config['security']['token.autocheck'] = true;
     $config['security']['token.param'] = 'token';
     $config['security']['headers'] = array();
 
-    $config['mongodb'] = array(
+    $config['mongodb']['default'] = array(
         'uri' => null,
         'dbname' => 'hydra',
     );
 
-    $config['pdo'] = array(
+    $config['pdo']['default'] = array(
         'dsn' => 'mysql:host=localhost;dbname=hydra;charset=utf8',
         'setNamesUtf8' => true,
         'username' => 'root',
@@ -56,7 +55,7 @@ $hooks['app.config'][-1000][] = function (&$config) {
 };
 
 // Load app configuration options from config file.
-$hooks['app.config'][0][] = function (&$config, &$dummy, App $app) {
+$hooks['app.config'][0][] = function (App $app, &$config) {
     $app_config_file = "{$app->core->app_dir}/config.php";
     if (file_exists($app_config_file)) {
         require $app_config_file;
@@ -74,4 +73,25 @@ $hooks['app.user'][0][] = function (App $app, &$user) {
     if (!$user) {
         $user = new User\Anonymous($app);
     }
+};
+
+// Init PDO and MongoDB services.
+$hooks['app.init'][0][] = function (App $app, &$services) {
+    foreach ($app->config->mongodb as $name => $params) {
+        $services['app.mongodb' . ($name == 'default' ? '' : ".$name")][0] = function() use ($params) {
+            $mongo = new \Mongo($params['uri']);
+            return $mongodb = $mongo->selectDB($params['dbname']);
+        };
+    }
+    
+    foreach ($app->config->pdo as $name => $params) {
+        $services['app.pdo' . ($name == 'default' ? '' : ".$name")][0] = function() use ($params) {
+            $pdo = new \PDO($params['dsn'], $params['username'], $params['password']);
+            if ($params['setNamesUtf8']) {
+                $pdo->exec('SET NAMES utf8');
+            }
+            return $pdo;
+        };
+    }
+
 };

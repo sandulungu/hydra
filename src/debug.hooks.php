@@ -23,13 +23,13 @@ if ($app->core->debug) {
                 return new Response\DataResponse($request, $request->app->config->getArrayCopy(), "Debug info » Configuration");
             }, 'html|json'),
             array('GET', 'hydra/debug/routes', function(Request $request) {
-                return new Response\DataResponse($request, $request->app->routes, "Debug info » Routes");
-            }, 'html|json'),
+                return new Response\RenderedResponse($request, "Debug info » Routes", Dump\Html::table($request->app->routes));
+            }, 'html'),
             array('GET', 'hydra/debug/env', function(Request $request) {
-                return new Response\DataResponse($request, $_ENV, "Debug info » Environment");
+                return new Response\RenderedResponse($request, "Debug info » Environment", Dump\Html::table($_ENV));
             }, 'html|json'),
             array('GET', 'hydra/debug/server', function(Request $request) {
-                return new Response\DataResponse($request, $_SERVER, "Debug info » Server options");
+                return new Response\RenderedResponse($request, "Debug info » Server options", Dump\Html::table($_SERVER));
             }, 'html|json'),
             array('GET', 'hydra/debug/cookie', function(Request $request) {
                 return new Response\DataResponse($request, $_COOKIE, "Debug info » Cookies");
@@ -49,9 +49,9 @@ if ($app->core->debug) {
     };
 
     // Set default configuration options.
-    $hooks['response.send'][1000][] = function () use ($start, $app) {
-        $app->monolog__debug->info("Generation time: " . (microtime(true) - $start));
-        $app->monolog__debug->info("Total time: " . (microtime(true) - $_SERVER['REQUEST_TIME']));
+    $hooks['response.send'][1000][] = function (Response $response) use ($start) {
+        $response->app->monolog__debug->info("Generation time: " . (microtime(true) - $start));
+        $response->app->monolog__debug->info("Total time: " . (microtime(true) - $_SERVER['REQUEST_TIME']));
     };
 
     // Test batch operation
@@ -89,8 +89,8 @@ if ($app->core->debug) {
 }
 
 // Better exception output for JSON, JS and other non-HTML requests
-$hooks['app.exception'][1000][] = function(\Exception $ex) use ($app) {
-    $request = reset($app->requests);
+$hooks['app.exception'][1000][] = function(ExceptionHandler $handler, \Exception $ex, App $app) {
+    $request = $app->mainRequest;
     $format = null;
     $debug = $app->core->debug;
     

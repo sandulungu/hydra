@@ -19,7 +19,7 @@
 namespace Hydra;
 
 // Set default configuration options.
-$hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
+$hooks['app.config'][-1000][] = function (App $app, &$config) {
     $config['monolog.mainLogFile'] = "{$app->core->data_dir}/logs/main.log";
     $config['monolog.logExceptions'] = true;
     
@@ -57,7 +57,7 @@ $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
 };
 
 // Register logger services.
-$hooks['app.init'][0][] = function (App $app) use (&$services) {
+$hooks['app.init'][0][] = function (App $app, &$services) {
 
     foreach ($app->config['monolog.handlers'] as $name => $params) {
         $services["app.monolog.handlers.$name"][] = function() use ($name, $params, $app) {
@@ -105,7 +105,7 @@ $hooks['app.init'][0][] = function (App $app) use (&$services) {
     }
 };
 
-$hooks['app.exception'][0][] = function(\Exception $ex, &$dummy, App $app) {
+$hooks['app.exception'][0][] = function(ExceptionHandler $handler, \Exception $ex, App $app) {
     if ($app->config['monolog.logExceptions']) {
         $app->monolog__main->addError($ex);
     }

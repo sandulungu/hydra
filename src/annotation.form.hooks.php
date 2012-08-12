@@ -13,7 +13,7 @@
 namespace Hydra;
 
 // Set form options.
-$hooks['form.init'][-1000][] = function (&$options) {
+$hooks['form.init'][-1000][] = function (&$options, $form, App $app) {
     // TODO...
 };
 

@@ -29,11 +29,11 @@ class DataResponse extends RenderedResponse {
         $this->data = $data;
     }
     
-    function render() {
+    function render($render_stream = true) {
         if (!isset($this->content)) {
             $method = "dump__$this->format";
             $this->variables['body'] = $this->app->$method($this->data);
-            return parent::render();
+            return parent::render($render_stream);
         }
         return $this->content;
     }

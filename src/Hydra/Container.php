@@ -20,14 +20,14 @@ namespace Hydra;
  * 
  * Service access syntax:
  *  - $someclass->service__name->...
- *  - $someclass['service.name']->... // if the service is not an object, this call will return a copy (PHP < 5.3.4 limitation)
+ *  - $someclass['service.name']->...
  * 
  * Inject methods in your hook files:
  *    $methods["someclass.method.name"][] = function($params, ...) {...};
  * 
  * Method access syntax:
  *  - $someclass->method__name($params, ...)
- *  - $someclass['method:method.name']($params, ...) // this will work on PHP 5.3.9 or later
+ *  - $someclass['method:method.name']($params, ...)
  * 
  * Together with the hooking system, this forms Hydra's plugins architecture.
  */
@@ -96,14 +96,14 @@ class Container implements \ArrayAccess {
                 throw new Exception\ContainerException("Service factory '$name' is not a valid callback.");
             }
             $this->$name = null;
-            $this->$name =& $factory($this);
+            $this->$name = $factory($this);
             return $this->$name;
         }
         
         // Try a local call
         elseif (method_exists($this, "service__$name")) {
             $this->$name = null;
-            $this->$name =& $this->{"service__$name"}($this);
+            $this->$name = $this->{"service__$name"}();
             return $this->$name;
         }
         
@@ -122,7 +122,7 @@ class Container implements \ArrayAccess {
                method_exists($this, "service__$name");
     }
 
-    function offsetGet($offset) {
+    function &offsetGet($offset) {
         if (strpos($offset, 'method:') === 0) {
             $self = $this;
             $callback = $this->__getMethod(substr($offset, 7), $is_remote);

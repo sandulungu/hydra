@@ -144,7 +144,7 @@ class App extends Container {
         }
         
         // Configure dynamic services
-        $this->hook('app.init', $app);
+        $this->hook('app.init', $this, $services);
     }
     
     /**
@@ -214,24 +214,28 @@ class App extends Container {
      * Save/load data from/to file.
      */
     function persist($filename, $value = null, $reset = false) {
-        $filename = "{$this->core->data_dir}/$filename";
+        
+        // Hide file contents from praying eyes.
+        $header = "<?php header('HTTP/1.0 404 Not Found'); die; ?>\n";
+        $filename = "{$this->core->data_dir}/$filename.php";
+        
         if ($reset) {
             if (!isset($value)) {
                 unlink($filename);
             }
         }
         elseif (file_exists($filename)) {
-            return unserialize(file_get_contents($filename));
+            return unserialize(substr(file_get_contents($filename), strlen($header)));
         }
         
         if (isset($value)) {
             if ($reset === self::PERSIST_RESET_USE_CALLBACK && $value instanceof \Closure) {
-                $data = file_exists($filename) ? unserialize(file_get_contents($filename)) : null;
+                $data = file_exists($filename) ? unserialize(substr(file_get_contents($filename), strlen($header))) : null;
                 $data = $value($data, $this);
             } else {
                 $data = $value instanceof \Closure ? $value($this) : $value;
             }
-            file_put_contents($filename, serialize($data));
+            file_put_contents($filename, $header . serialize($data));
             return $data;
         }
     }
@@ -290,12 +294,11 @@ class App extends Container {
             }
         }
         ksort($hooks); // hooks may have different weights
-        if (!isset($in)) {
-            $in =& $out;
-        }
+        
+        $result = null;
         foreach ($hooks as &$same_weight_hooks) {
             foreach ($same_weight_hooks as $callback) {
-                $result =& $callback($in, $out, $this);
+                $result = $callback($in, $out, $this);
                 if ($merge_result && is_array($result)) {
                     $out = array_merge($out, $result);
                 }
@@ -412,7 +415,7 @@ class App extends Container {
     protected function service__config() {
         $app = $this;
         return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
-            return $app->infoHook('app.config');
+            return $app->infoHook('app.config', $this);
         }));
     }
     
@@ -427,19 +430,21 @@ class App extends Container {
      * (Current) User provider.
      */
     protected function service__user() {
-        $session_key = $this->config->session['userKey'];
-        if (!isset($this->session[$session_key])) {
-            $this->session[$session_key] = $this->hook('app.user', $this);
+        if (!isset($this->session['user'])) {
+            $this->session['user'] = $this->hook('app.user', $this);
         }
-        return $this->session[$session_key];
+        return $this->session['user'];
     }
 
     /**
      * Session provider.
      */
-    function &service__session() {
+    function service__session() {
         $this->hook('app.session.start', $this->config->session['name']);
-        return $_SESSION;
+        if (!isset($_SESSION['hydra'])) {
+            $_SESSION[$this->config->session['section']] = array();
+        }
+        return new ArrayObject($_SESSION['hydra']);
     }
 
     protected function service__annotationsReader() {
@@ -452,9 +457,9 @@ class App extends Container {
     protected function service__security__salt() {
         $filename = "{$this->core->data_dir}/security.salt";
         if (!file_exists($filename)) {
-            $characterList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            $character_list = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             for ($i = 0, $salt = ''; $i < 128; $i++) {
-                $salt .= $characterList{mt_rand(0, (strlen($characterList) - 1))};
+                $salt .= $character_list{mt_rand(0, (strlen($character_list) - 1))};
             }
             file_put_contents($filename, $salt);
             return $salt;
@@ -467,32 +472,13 @@ class App extends Container {
      * Generates CSRF protection token and caches it in a session cookie on the client-side.
      */
     protected function service__security__token() {
-        $session_key = $this->config->security['token.sessionKey'];
+        $session_key = 'security.token';
         if (isset($this->session[$session_key])) {
             return $this->session[$session_key];
         }
         $token = $this->hash(mt_rand(), false, 1);
         $this->session[$session_key] = $token;
         return $token;
-    }
-
-    /**
-     * Default MongoDB service.
-     */
-    protected function service__mongodb() {
-        $mongo = new \Mongo($this->config['mongodb']['uri']);
-        return $mongodb = $mongo->selectDB($this->config['mongodb']['dbname']);
-    }
-
-    /**
-     * Default PDO service.
-     */
-    protected function service__pdo() {
-        $pdo = new \PDO($this->config['pdo']['dsn'], $this->config['pdo']['username'], $this->config['pdo']['password']);
-        if ($this->config['pdo']['setNamesUtf8']) {
-            $pdo->exec('SET NAMES utf8');
-        }
-        return $pdo;
     }
 
     /**

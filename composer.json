@@ -4,17 +4,10 @@
     "description": "The cozy RESTfull PHP5.3 micro-framework.",
     "homepage": "http://z7.github.com/hydra",
     "keywords": [
-        "microframework",
-        "framework",
-        "dependency injection",
-        "form builder",
-        "REST", 
-        "router",
-        "micro",
-        "lightweight",
-        "simple",
-        "Twig","Mongodb",
-        "MVC"
+        "microframework", "framework",
+        "dependency injection", "form builder", "REST", "router", "MVC",
+        "micro", "lightweight", "simple", "plugins",
+        "Twig", "MongoDB", "PDO", "Twitter Bootstrap", "Monolog", "Symfony"
     ],
     "replace": {
         "z7/hydra": "self.version"
@@ -27,7 +20,7 @@
         }
     ],
     "require": {
-        "php": ">=5.3",
+        "php": ">=5.3.4",
         "twig/twig": "1.*",
         "symfony/http-kernel": "2.*",
         "monolog/monolog": "1.*"
@@ -38,6 +31,11 @@
     "autoload": {
         "psr-0" : {
             "Hydra" : "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.x-dev"
         }
     }
 }

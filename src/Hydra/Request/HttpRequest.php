@@ -58,14 +58,16 @@ class HttpRequest extends Request {
      */
     protected function service__baseurl() {
         $url_rewritten = isset($this->server['REDIRECT_URL']);
-        $script = $this->server['SCRIPT_NAME'];
+        $script = $this->server['SCRIPT_NAME']; // lowercase
         $uri = $this->server['REQUEST_URI'];
         if ($url_rewritten) {
             $uri_lowercase = mb_strtolower($uri);
             for($i = 0; $i < strlen($uri) && $i < strlen($script) && $uri_lowercase{$i} == $script{$i}; $i++) {}
             $this->webroot = $baseurl = rtrim(substr($uri, 0, $i - 1), '/');
         } else {
-            $baseurl = substr($uri, 0, strlen($script));
+            $baseurl = strlen($uri) < strlen($script) ?
+                $uri . substr($script, strlen($uri)) :
+                substr($uri, 0, strlen($script));
             $this->webroot = dirname($baseurl);
         }
         return $baseurl;

@@ -17,7 +17,7 @@ use Hydra\Utils;
 // TODO: Bugfixes - Array() instead of empty and multi-list(select) values not binded
 
 // Default app setings.
-$hooks['app.config'][-1000][] = function (&$config) {
+$hooks['app.config'][-1000][] = function (App $app, &$config) {
     $config['form.twigViews'] = array(
         'default' => 'form.html.twig',
     );
@@ -50,7 +50,7 @@ $hooks['app.config'][-1000][] = function (&$config) {
 
 // Usage of custom form classes.
 // When creating your Form types, most probably, you'll want to use something similar.
-$hooks['form.init'][0][] = function(array &$options, &$form, App $app) {
+$hooks['form.init'][0][] = function(array $options, &$form, App $app) {
     if (isset($options['type'])) {
         $type = $options['type'];
         if ($type == 'list' || $type == 'select') {
@@ -63,7 +63,7 @@ $hooks['form.init'][0][] = function(array &$options, &$form, App $app) {
 };
 
 // Create a default form.
-$hooks['form.init'][1000][] = function(array &$options, &$form, App $app) {
+$hooks['form.init'][1000][] = function(array $options, &$form, App $app) {
     if (!$form) {
         if (!empty($options['type']) && !in_array($options['type'], $app->config->form__coreTypes)) {
             throw new \LogicException("Unknown form type: {$options['type']}.");

@@ -94,6 +94,10 @@ class PharCompiler {
  * @license     http://www.opensource.org/licenses/MIT MIT
  */
 
+if (version_compare(PHP_VERSION, '5.3.4') < 0) {
+    throw new RuntimeException('Hydra requires PHP v5.3.4 or later.');
+}
+
 Phar::mapPhar('hydra.phar');
 return require_once 'phar://hydra.phar/autoload.php';
 

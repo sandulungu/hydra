@@ -13,7 +13,7 @@
 
         <!-- Le styles -->
         {% block head_css %}
-        <link href="//current.bootstrapcdn.com/bootstrap-v204/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.0.4/css/bootstrap-combined.min.css" rel="stylesheet">
         {#% for css in app.config['assets.css'] %}
         <link href="{{ css }}" rel="stylesheet">
         {% endfor %#}
@@ -27,12 +27,11 @@
                 color: #00c;
                 font-style: normal;
             }
-            .dump strong {
+            .dump em.dump-int {
                 color: #257;
             }
-            .dump strong em {
+            .dump em.dump-float {
                 color: #a20;
-                font-weight: normal;
             }
             {%- endblock -%}
         </style>
@@ -107,7 +106,7 @@
         
         {% block scripts %}
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-        <script src="//current.bootstrapcdn.com/bootstrap-v204/js/bootstrap.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.0.4/js/bootstrap.min.js"></script>
         {#% for script in app['assets.js'] %}
         <script src="{{ script }}"></script>
         {% endfor %#}

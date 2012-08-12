@@ -38,7 +38,7 @@ class ExceptionHandler extends \Symfony\Component\HttpKernel\Debug\ExceptionHand
     function handle(\Exception $exception) {
         if ($this->app) {
             try {
-                $exception = $this->app->hook('app.exception', null, $exception);
+                $exception = $this->app->hook('app.exception', $this, $exception);
             } catch (\Exception $innerEx) {
                 return $this->_handleNested($exception, $innerEx);
             }

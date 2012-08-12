@@ -13,7 +13,7 @@
 namespace Hydra;
 
 // Set default configuration options.
-$hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
+$hooks['app.config'][-1000][] = function (App $app, &$config) {
     $config['twig.options'] = array(
         'cache' => "{$app->core->data_dir}/cache/twig",
         'debug' => $app->core->debug,
@@ -27,7 +27,7 @@ $hooks['app.config'][-1000][] = function (&$config, &$dummy, App $app) {
 };
 
 // Core views dir should be the last one in the list.
-$hooks['app.config'][1000][] = function (&$config) {
+$hooks['app.config'][1000][] = function (App $app, &$config) {
     $config['twig.dirs'][] = __DIR__ . '/../views';
 };
 

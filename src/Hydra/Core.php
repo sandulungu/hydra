@@ -21,11 +21,12 @@ namespace Hydra;
  * @property string $app_dir
  * @property string $core_dir
  * @property string $data_dir
- * @property ExceptionHandler $exception_handler
  */
 class Core {
     
     protected $_config;
+    
+    var $errorHandler, $exception_handler;
 
     function __construct(array $config = array()) {
         $this->_config =& $config;
@@ -43,7 +44,7 @@ class Core {
             set_exception_handler(array($this->exception_handler, 'handle'));
         }
         if ($this->register_error_handler) {
-            \Symfony\Component\HttpKernel\Debug\ErrorHandler::register();
+            $this->errorHandler = \Symfony\Component\HttpKernel\Debug\ErrorHandler::register();
         }
         
         foreach (array($config['data_dir'], "{$config['data_dir']}/cache", "{$config['data_dir']}/logs") as $dir) {
