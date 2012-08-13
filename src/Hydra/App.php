@@ -415,7 +415,7 @@ class App extends Container {
     protected function service__config() {
         $app = $this;
         return new Config($app, $app->fallback__cache('app.config', function() use ($app) {
-            return $app->infoHook('app.config', $this);
+            return $app->infoHook('app.config', $app);
         }));
     }
     

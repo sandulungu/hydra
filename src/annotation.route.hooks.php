@@ -75,7 +75,6 @@ $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotatio
         $methods = implode("', '", Action::$METHODS_ALLOWED);
         throw new \DomainException("Http method should be one of: '$methods', but '$http_method' given in $name annotation.");
     }
-    $requirements['method'] = $http_method;
     
     if ($format) {
         $requirements['format'] = $format;
