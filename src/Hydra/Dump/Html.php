@@ -28,14 +28,14 @@ class Html {
             return self::dump($data);
         }
         
-        foreach ($rows as &$row) {
-            if (is_object($row)) {
-                $row = get_object_vars($row);
+        foreach ($rows as &$row_ref) {
+            if (is_object($row_ref)) {
+                $row_ref = get_object_vars($row_ref);
             }
-            elseif (!is_array($row)) {
-                $row = array($row);
+            elseif (!is_array($row_ref)) {
+                $row_ref = array($row_ref);
             }
-            $headers += $row;
+            $headers += $row_ref;
         }
         $numeric_cols = Utils::arrayIsNumeric($headers);
         $headers = array_keys($headers);
