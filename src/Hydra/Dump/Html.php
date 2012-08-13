@@ -43,23 +43,22 @@ class Html {
         
         $table = array();
         if (!$numeric_cols) {
+            if (!$numeric_rows) {
+                $table[$key][-1] = '<th></th>';
+            }
             foreach ($headers as $header) {
-                if (!is_int($header)) {
-                    $value = self::dump($header, 0);
-                    $table[-1][$header] = "<th>$value</th>";
-                }
+                $value = self::dump($header, 0);
+                $table[$header][-1] = "<th>$value</th>";
             }
         }
         foreach ($rows as $key => $row) {
             if (!$numeric_rows) {
-                if (!is_int($key)) {
-                    $value = self::dump($key, 0);
-                    $table[$key][-1] = "<th>$value</th>";
-                }
+                $value = self::dump($key, 0);
+                $table[$key][-1] = "<th>$value</th>";
             }
             foreach ($headers as $header) {
-                $table[$key][$header] =  array_key_exists($header, $row) ? 
-                        '<td>' . self::dump($row[$header], 0) . '</td>' : '<td></td>';
+                 $value = array_key_exists($header, $row) ? self::dump($row[$header], 0) : '';
+                 $table[$key][$header] = "<td>$value</td>";
             }
         }
         $table = implode("</tr>\n<tr>", array_map(function($row) { return implode("", $row); }, $table));
