@@ -30,13 +30,27 @@ class Core {
 
     function __construct(array $config = array()) {
         $this->_config =& $config;
+        
+        // Try to locate app folder.
+        if (!isset($config['app_dir'])) {
+            $cwd = getcwd();
+            while (!is_dir("$cwd/app")) {
+                if ($cwd == dirname($cwd)) {
+                    throw new \LogicException('/app folder not found.');
+                }
+                $cwd = dirname($cwd);
+            }
+            $config['app_dir'] = "$cwd/app";
+        }
+
+        $is_web_request = isset($_SERVER['SERVER_NAME']);
+        
         $config += array(
-            'debug' => $_SERVER['SERVER_NAME'] == 'localhost',
-            'register_exception_handler' => true,
-            'register_error_handler' => true,
+            'debug' => !$is_web_request || $_SERVER['SERVER_NAME'] == 'localhost',
+            'register_exception_handler' => $is_web_request,
+            'register_error_handler' => $is_web_request,
             'core_dir' => __DIR__ . '/../..',
-            'data_dir' => '../data',
-            'app_dir' => '../app',
+            'data_dir' => "{$config['app_dir']}/../data",
         );
         
         $this->exception_handler = new ExceptionHandler($this->debug);

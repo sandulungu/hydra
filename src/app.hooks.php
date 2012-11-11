@@ -79,7 +79,7 @@ $hooks['app.user'][0][] = function (App $app, &$user) {
 $hooks['app.init'][0][] = function (App $app, &$services) {
     foreach ($app->config->mongodb as $name => $params) {
         $services['app.mongodb' . ($name == 'default' ? '' : ".$name")][0] = function() use ($params) {
-            $mongo = new \Mongo($params['uri']);
+            $mongo = $params['uri'] ? new \Mongo($params['uri']) : new \Mongo;
             return $mongodb = $mongo->selectDB($params['dbname']);
         };
     }

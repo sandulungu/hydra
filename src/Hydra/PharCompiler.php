@@ -39,7 +39,6 @@ class PharCompiler {
             ->name('*.php')
             ->name('*.twig')
             ->notName('PharCompiler.php')
-            ->notName('ide_helper.php')
             ->exclude('Tests')
             ->in('src')
             ->in('views')

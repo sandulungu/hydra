@@ -44,11 +44,11 @@ class Html {
         $table = array();
         if (!$numeric_cols) {
             if (!$numeric_rows) {
-                $table[$key][-1] = '<th></th>';
+                $table[-1][-1] = '<th></th>';
             }
             foreach ($headers as $header) {
                 $value = self::dump($header, 0);
-                $table[$header][-1] = "<th>$value</th>";
+                $table[-1][$header] = "<th>$value</th>";
             }
         }
         foreach ($rows as $key => $row) {

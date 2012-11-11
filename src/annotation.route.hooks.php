@@ -42,26 +42,32 @@ $hooks['app.routes'][0][] = function (App $app) {
 $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotation) {
     static $prefixes;
     if ($annotation['type'] != 'method') {
-        $prefixes[$annotation['class']] = $annotation['value'];
-        return;
+        return $prefixes[$annotation['class']] = trim($annotation['value'], '/');
     }
     
-    $requirements = $defaults = array();
-    @list($http_method, $pattern, $format, $json) = preg_split('/\s+/', $annotation['value'], 4);
+    // Extract the optional $http_method
+    @list($http_method, $value) = preg_split('/\s+/', $annotation['value'], 4);
+    if (strpos($http_method, '/') !== false) {
+        $http_method = 'GET';
+        $value = $annotation['value'];
+    }
+    
+    @list($pattern, $format, $json) = preg_split('/\s+/', $value, 4);
     
     // Format is optional.
     if ($format && $format{0} == '{') {
         $format = null;
-        list($http_method, $pattern, $json) = preg_split('/\s+/', $annotation['value'], 3);
+        list($pattern, $json) = preg_split('/\s+/', $value, 3);
     }
     
+    $requirements = $defaults = array();
     if ($json) {
         extract(json_decode($json, true));
     }
     
     // Append Controller @route <prefix>.
     if (!empty($prefixes[$annotation['class']])) {
-        $pattern = rtrim($prefixes[$annotation['class']], '/') .'/'. ltrim($pattern, '/');
+        $pattern = $prefixes[$annotation['class']] .'/'. ltrim($pattern, '/');
     }
     
     $name = $defaults['controller.class'] = $annotation['class'];

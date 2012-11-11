@@ -36,8 +36,8 @@ class AnnotationsReader extends Container {
         );
     }
     
-    function forClass($classname, array $filter = array()) {
-        $reflection = new \ReflectionClass($classname);
+    function forClass($class, array $filter = array()) {
+        $reflection = new \ReflectionClass($class);
         return $this->_parseDocComment(
             $reflection->getDocComment(), 
             $filter,
@@ -45,8 +45,8 @@ class AnnotationsReader extends Container {
         );
     }
     
-    function forClassMethods($classname, array $filter = array()) {
-        $class = new \ReflectionClass($classname);
+    function forClassMethods($class, array $filter = array()) {
+        $class = new \ReflectionClass($class);
         $annotations = array();
         foreach ($class->getMethods() as $method) {
             $annotations = array_merge($annotations, $this->_parseDocComment(
@@ -58,8 +58,8 @@ class AnnotationsReader extends Container {
         return $annotations;
     }
     
-    function forClassProperties($classname, array $filter = array()) {
-        $class = new \ReflectionClass($classname);
+    function forClassProperties($class, array $filter = array()) {
+        $class = new \ReflectionClass($class);
         $annotations = array();
         foreach ($class->getProperties() as $property) {
             $annotations = array_merge($annotations, $this->_parseDocComment(

@@ -20,6 +20,8 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 /**
  * Webservice response holder.
  * 
+ * TODO: Check directory boundary
+ * 
  * @property string $body
  */
 class FileResponse extends Response {

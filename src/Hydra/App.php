@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
  * @property User              $user
  * @property \Twig_Environment $twig
  * @property AnnotationsReader $annotationsReader
+ * @property \hydra\Request    $mainRequest
  *
  * @property array $mimetypes
  *
@@ -60,11 +61,6 @@ class App extends Container {
     
     protected $_hooks = array(), $_hookFiles = array();
     var $requests = array();
-    
-    /**
-     * @var \Hydra\Request
-     */
-    var $mainRequest;
     
     /**
      * @var \Hydra\Core
@@ -197,7 +193,7 @@ class App extends Container {
      */
     function dispatch($path, $method = 'GET', $query = array(), $data = null, $server = array()) {
         $request = new Request\HttpRequest($this, $path, $method, $query, $data, $server);
-        if (!$this->mainRequest) {
+        if (!isset($this->mainRequest)) {
             $request->isMain = true;
             $this->mainRequest = $request;
         }
@@ -216,8 +212,8 @@ class App extends Container {
     function persist($filename, $value = null, $reset = false) {
         
         // Hide file contents from praying eyes.
-        $header = "<?php header('HTTP/1.0 404 Not Found'); die; ?>\n";
-        $filename = "{$this->core->data_dir}/$filename.php";
+//        $header = "<?php header('HTTP/1.0 404 Not Found'); die; ?".">\n";
+        $filename = "{$this->core->data_dir}/$filename";
         
         if ($reset) {
             if (!isset($value)) {
@@ -225,7 +221,8 @@ class App extends Container {
             }
         }
         elseif (file_exists($filename)) {
-            return unserialize(substr(file_get_contents($filename), strlen($header)));
+            return unserialize(file_get_contents($filename));
+//            return unserialize(substr(file_get_contents($filename), strlen($header)));
         }
         
         if (isset($value)) {
@@ -235,7 +232,8 @@ class App extends Container {
             } else {
                 $data = $value instanceof \Closure ? $value($this) : $value;
             }
-            file_put_contents($filename, $header . serialize($data));
+            file_put_contents($filename, serialize($data));
+//            file_put_contents($filename, $header . serialize($data));
             return $data;
         }
     }
@@ -447,6 +445,10 @@ class App extends Container {
         return new ArrayObject($_SESSION['hydra']);
     }
 
+    protected function service__mainRequest() {
+        return new Request\StaticRequest($this);
+    }
+    
     protected function service__annotationsReader() {
         return new AnnotationsReader();
     }
