@@ -141,9 +141,11 @@ class Html {
             if ($type == 'unknown') {
                 $type = 'string';
             }
-            $data = Utils::htmlentities($data);
             if (preg_match('`^https?://[^\s]+$`', $data)) {
+                $data = Utils::htmlentities($data);
                 $data = "<a href='$data'>$data</a>";
+            } else {
+                $data = Utils::htmlentities($data);
             }
         }
         

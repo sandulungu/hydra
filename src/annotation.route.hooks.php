@@ -47,7 +47,7 @@ $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotatio
     
     // Extract the optional $http_method
     @list($http_method, $value) = preg_split('/\s+/', $annotation['value'], 4);
-    if (strpos($http_method, '/') !== false) {
+    if (strpos($http_method, '/') !== false || $http_method == '.') {
         $http_method = 'GET';
         $value = $annotation['value'];
     }
@@ -64,10 +64,11 @@ $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotatio
     if ($json) {
         extract(json_decode($json, true));
     }
-    
+
     // Append Controller @route <prefix>.
     if (!empty($prefixes[$annotation['class']])) {
-        $pattern = $prefixes[$annotation['class']] .'/'. ltrim($pattern, '/');
+        $pattern = $pattern == '.' ? $prefixes[$annotation['class']] :
+            $prefixes[$annotation['class']] .'/'. ltrim($pattern, '/');
     }
     
     $name = $defaults['controller.class'] = $annotation['class'];
