@@ -23,6 +23,9 @@ $hooks['app.routes'][0][] = function (App $app) {
             }
             $classname = str_replace('/', '\\', substr($file, strlen($app_src_dir), -4));
             
+            $reflection = new \ReflectionClass($classname);
+            if ($reflection->isAbstract()) continue;
+            
             // Prepare prefix
             $app->annotationsReader->forClass($classname, array('route'));
             
@@ -46,18 +49,18 @@ $methods['annotation.route'][0] = function(AnnotationsReader $reader, $annotatio
     }
     
     // Extract the optional $http_method
-    @list($http_method, $value) = preg_split('/\s+/', $annotation['value'], 4);
+    @list($http_method, $value) = preg_split('/\s+/', $annotation['value'], 2);
     if (strpos($http_method, '/') !== false || $http_method == '.') {
         $http_method = 'GET';
         $value = $annotation['value'];
     }
     
-    @list($pattern, $format, $json) = preg_split('/\s+/', $value, 4);
+    @list($pattern, $format, $json) = preg_split('/\s+/', $value, 3);
     
     // Format is optional.
     if ($format && $format{0} == '{') {
         $format = null;
-        list($pattern, $json) = preg_split('/\s+/', $value, 3);
+        list($pattern, $json) = preg_split('/\s+/', $value, 2);
     }
     
     $requirements = $defaults = array();

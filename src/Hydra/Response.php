@@ -42,7 +42,7 @@ class Response {
             if (isset($request->app->mimetypes[$this->format])) {
                 $content_type = $request->app->mimetypes[$this->format];
                 if (preg_match('/text|json|xml/', $content_type)) {
-                    $content_type .= '; charset=UTF-8';
+                    $content_type .= '; charset=utf-8';
                 }
                 $this->headers['Content-Type'] = $content_type;
             }
@@ -72,8 +72,9 @@ class Response {
         session_cache_limiter('');
         
         if ($ttl > 0) {
-            $headers["Cache-Control"] = null;
+            $headers["Cache-Control"] = "max-age=$ttl, public, must-revalidate, proxy-revalidate";
             $headers['Expires'] = gmdate(DATE_RFC2822, time() + $ttl);
+//            $headers['Last-Modified'] = gmdate(DATE_RFC2822, time());
         } else {
             $headers["Cache-Control"] = "no-cache, must-revalidate"; // HTTP/1.1
             $headers["Expires"] = "Mon, 7 May 2012 07:07:07 GMT"; // Date in the past

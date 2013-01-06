@@ -42,7 +42,7 @@
                         log(hasErrors ? 'Done with errors.' : 'All done successfully.');
                         if (!hasErrors) {
                             {% if redirect_uri is defined %}
-                            location.href = '{{ response.request.baseurl }}/{{ redirect_uri }}';
+                            location.href = '{{ baseurl }}/{{ redirect_uri }}';
                             {% elseif redirect_url is defined %}
                             location.href = '{{ redirect_url }}';
                             {% endif %}

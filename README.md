@@ -47,7 +47,7 @@ Features
 * [Monolog](https://github.com/Seldaek/monolog) __logging__ + FirePHP/ChromePHP support + Symfony's __Exceptions handler__ with debug/production presets = easy debugging.
 * Extremely friendly with IDEs. All services and dynamic methods support auto-completion.
 * Clean UI created using [Twitter Bootstrap](http://twitter.github.com/bootstrap/).
-* Distributed in source code, as standalone __phar__ and the _z7/hydra_ __composer package__.
+* Distributed in source code, as standalone __phar__ and the [hydra/hydra](https://packagist.org/packages/hydra/hydra) __composer package__.
 
 
 Why yet another framework?

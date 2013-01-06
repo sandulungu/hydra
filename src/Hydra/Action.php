@@ -31,6 +31,7 @@ abstract class Action {
             $requirements = array('format' => $requirements);
         }
         $requirements += array('format' => 'html');
+        
         if (($request->method == 'HEAD' ? 'GET' : $request->method) != $http_method) {
             return false;
         }
@@ -61,8 +62,17 @@ abstract class Action {
             }
         }
         
-//        list($default_format) = explode('|', $requirements['format']);
         $params += $defaults;
+        
+        if (!isset($params['format']) && 
+            $request instanceof Request\HttpRequest &&
+            !empty($request->server['HTTP_ACCEPT']) &&
+            strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false &&
+            preg_match("`^{$requirements['format']}$`", 'json')
+        ) {
+            $params['format'] = 'json';
+        }
+        
         if (!isset($params['format'])) {
             if (!preg_match("`^{$requirements['format']}$`", 'html')) {
                 return false;
