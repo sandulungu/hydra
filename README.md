@@ -3,7 +3,7 @@ Hydra
 
 The cozy RESTfull PHP5.3 micro-framework.
 
-* [Homepage](http://z7.github.com/hydra)
+* [Homepage](http://sandulungu.github.com/hydra)
 * [Application template](https://github.com/z7/hydra_app)
 
 Requirements
